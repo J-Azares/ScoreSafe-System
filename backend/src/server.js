@@ -1,3 +1,4 @@
+
 // server.js
 const express = require('express');
 const mysql = require('mysql2');
@@ -6,7 +7,7 @@ const bcrypt = require('bcrypt');
 const path = require('path');
 
 const app = express();
-const port = 8080;
+const port = 3000;
 
 // Middleware
 app.use(bodyParser.urlencoded({ extended: false }));
