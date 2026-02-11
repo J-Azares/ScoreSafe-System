@@ -1,34 +1,17 @@
 const express = require('express');
-const path = require('path');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const scoreRoutes = require('./routes/scores');
 
 const app = express();
 
-app.use(express.static(path.join(__dirname, '../../frontend')));
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../frontend', 'index.html'));
+app.use(cors());
+app.use(bodyParser.json());
+app.use(express.static('public'));
+
+app.use('/api/scores', scoreRoutes);
+
+app.listen(3000, () => {
+  console.log('Server running on http://localhost:3000');
 });
 
-app.listen(8080, () => {
-  console.log('Server is listening on port 8080');
-});
-
-const mysql = require('mysql2');
-
-// Create connection
-const db = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',        // your MySQL username
-  password: '',        // your MySQL password
-  database: 'scoresafe'
-});
-
-// Connect
-db.connect((err) => {
-  if (err) {
-    console.error('Database connection failed:', err.message);
-  } else {
-    console.log('Connected to MySQL database.');
-  }
-});
-
-module.exports = db;
