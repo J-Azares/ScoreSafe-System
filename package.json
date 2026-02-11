@@ -2,6 +2,7 @@
   "dependencies": {
     "bcrypt": "^6.0.0",
     "body-parser": "^2.2.2",
+    "cors": "^2.8.6",
     "ejs": "^4.0.1",
     "express": "^5.2.1",
     "mysql2": "^3.17.0"
@@ -24,6 +25,5 @@
   "bugs": {
     "url": "https://github.com/J-Azares/ScoreSafe-System/issues"
   },
-  "homepage": "https://github.com/J-Azares/ScoreSafe-System#readme",
-  "devDependencies": {}
+  "homepage": "https://github.com/J-Azares/ScoreSafe-System#readme"
 }
