@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ScoreSafe | Dashboard</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<header>
+    <h1>ScoreSafe</h1>
+    <nav>
+        <a href="#">Dashboard</a>
+        <a href="#">Profile</a>
+        <a href="#">Logout</a>
+    </nav>
+</header>
+
+<main>
+    <aside>
+        <h3>Menu</h3>
+        <ul>
+            <li>📘 Subjects</li>
+            <li>📊 Grades</li>
+            <li>👤 Profile</li>
+        </ul>
+    </aside>
+
+    <section>
+        <h2>My Scores</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>Assessment</th>
+                    <th>Score</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% scores.forEach(score => { %>
+                    <tr>
+                        <td><%= score.subject_name %></td>
+                        <td><%= score.assessment %></td>
+                        <td><%= score.score %></td>
+                        <td><%= score.total_score %></td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </section>
+</main>
+
+<footer>
+    <p>ScoreSafe © 2026</p>
+</footer>
+
+</body>
+</html>
