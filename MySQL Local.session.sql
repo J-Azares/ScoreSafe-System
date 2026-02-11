@@ -1,105 +1,138 @@
--- ----------------------------------------
--- ScoreSafe Database + Tables + Sample Data
--- ----------------------------------------
+// ...existing code...
+-- Create database and core schema for "scoresafe"
+CREATE DATABASE IF NOT EXISTS `scoresafe` CHARACTER SET = 'utf8mb4' COLLATE = 'utf8mb4_unicode_ci';
+USE `scoresafe`;
 
--- Create and use database
-DROP DATABASE IF NOT EXISTS scoresafe_db;
-CREATE DATABASE scoresafe_db;
-USE scoresafe_db;
+-- Roles / Users
+CREATE TABLE IF NOT EXISTS `roles` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `name` VARCHAR(50) NOT NULL UNIQUE,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
 
--- Users Table
-CREATE TABLE IF NOT EXISTS users (
-    user_id INT AUTO_INCREMENT PRIMARY KEY,
-    full_name VARCHAR(100) NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL,
-    user_identifier VARCHAR(50) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    role ENUM('student', 'teacher') NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+CREATE TABLE IF NOT EXISTS `users` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `username` VARCHAR(100) NOT NULL UNIQUE,
+  `email` VARCHAR(255) NOT NULL UNIQUE,
+  `password_hash` VARCHAR(255) NOT NULL,
+  `role_id` INT NOT NULL DEFAULT 1,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (`role_id`) REFERENCES `roles`(`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB;
 
--- Subjects Table
-CREATE TABLE IF NOT EXISTS subjects (
-    subject_id INT AUTO_INCREMENT PRIMARY KEY,
-    subject_name VARCHAR(100) NOT NULL
-);
+-- Teams and players
+CREATE TABLE IF NOT EXISTS `teams` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `name` VARCHAR(150) NOT NULL UNIQUE,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
 
--- Classes Table
-CREATE TABLE IF NOT EXISTS classes (
-    class_id INT AUTO_INCREMENT PRIMARY KEY,
-    subject_id INT NOT NULL,
-    teacher_id INT NOT NULL,
-    class_name VARCHAR(100),
-    FOREIGN KEY (subject_id) REFERENCES subjects(subject_id),
-    FOREIGN KEY (teacher_id) REFERENCES users(user_id)
-);
+CREATE TABLE IF NOT EXISTS `players` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `team_id` INT NULL,
+  `display_name` VARCHAR(150) NOT NULL,
+  `email` VARCHAR(255),
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `total_score` INT NOT NULL DEFAULT 0,
+  FOREIGN KEY (`team_id`) REFERENCES `teams`(`id`) ON DELETE SET NULL
+) ENGINE=InnoDB;
 
--- Enrollments Table
-CREATE TABLE IF NOT EXISTS enrollments (
-    enrollment_id INT AUTO_INCREMENT PRIMARY KEY,
-    class_id INT NOT NULL,
-    student_id INT NOT NULL,
-    FOREIGN KEY (class_id) REFERENCES classes(class_id),
-    FOREIGN KEY (student_id) REFERENCES users(user_id)
-);
+-- Games / matches
+CREATE TABLE IF NOT EXISTS `games` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `name` VARCHAR(200) NOT NULL,
+  `scheduled_at` DATETIME,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
 
--- Assessments Table
-CREATE TABLE IF NOT EXISTS assessments (
-    assessment_id INT AUTO_INCREMENT PRIMARY KEY,
-    class_id INT NOT NULL,
-    title VARCHAR(100) NOT NULL,
-    total_score INT NOT NULL,
-    FOREIGN KEY (class_id) REFERENCES classes(class_id)
-);
+-- Scores recorded per player per game
+CREATE TABLE IF NOT EXISTS `scores` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `player_id` INT NOT NULL,
+  `game_id` INT NOT NULL,
+  `points` INT NOT NULL,
+  `recorded_by` INT,
+  `recorded_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (`player_id`) REFERENCES `players`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`game_id`) REFERENCES `games`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`recorded_by`) REFERENCES `users`(`id`) ON DELETE SET NULL,
+  INDEX (`player_id`),
+  INDEX (`game_id`),
+  INDEX (`recorded_at`)
+) ENGINE=InnoDB;
 
--- Scores Table
-CREATE TABLE IF NOT EXISTS scores (
-    score_id INT AUTO_INCREMENT PRIMARY KEY,
-    assessment_id INT NOT NULL,
-    student_id INT NOT NULL,
-    score INT NOT NULL,
-    FOREIGN KEY (assessment_id) REFERENCES assessments(assessment_id),
-    FOREIGN KEY (student_id) REFERENCES users(user_id)
-);
+-- Simple audit trail for changes (generic)
+CREATE TABLE IF NOT EXISTS `audit_trail` (
+  `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
+  `table_name` VARCHAR(128) NOT NULL,
+  `row_id` VARCHAR(64),
+  `action` ENUM('INSERT','UPDATE','DELETE') NOT NULL,
+  `changed_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `changed_by` INT,
+  `details` JSON,
+  INDEX (`table_name`),
+  INDEX (`changed_by`)
+) ENGINE=InnoDB;
 
--- --------------------------------------------------
--- Sample Data (Test Users, Subjects, Classes, Scores)
--- --------------------------------------------------
+-- Trigger: when a new score is inserted, update player's total_score and write audit
+DELIMITER $$
+CREATE TRIGGER `scores_after_insert` AFTER INSERT ON `scores`
+FOR EACH ROW
+BEGIN
+  -- Update aggregate total
+  UPDATE `players` SET `total_score` = IFNULL(`total_score`,0) + NEW.points WHERE `id` = NEW.player_id;
 
--- Sample users:
--- (password for all below = "password123" for testing)
-INSERT INTO users (full_name, email, user_identifier, password, role)
-VALUES
-('Juan Dela Cruz', 'juan@student.edu', '2023-001', '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'student'),
-('Maria Santos', 'maria@student.edu', '2023-002', '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'student'),
-('Ms. Reyes', 'reyes@school.edu', 'TCHR-101', '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'teacher');
+  -- Insert into audit trail
+  INSERT INTO `audit_trail` (`table_name`, `row_id`, `action`, `changed_by`, `details`)
+  VALUES ('scores', CAST(NEW.id AS CHAR), 'INSERT', NEW.recorded_by, JSON_OBJECT('player_id', NEW.player_id, 'game_id', NEW.game_id, 'points', NEW.points));
+END$$
+DELIMITER ;
 
--- Sample subjects
-INSERT INTO subjects (subject_name)
-VALUES ('Mathematics'), ('English'), ('Science');
+-- Stored procedure to add a score safely (transactional)
+DELIMITER $$
+CREATE PROCEDURE `add_score` (
+  IN p_player_id INT,
+  IN p_game_id INT,
+  IN p_points INT,
+  IN p_recorded_by INT
+)
+BEGIN
+  DECLARE EXIT HANDLER FOR SQLEXCEPTION
+  BEGIN
+    ROLLBACK;
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Failed to add score';
+  END;
 
--- Sample classes (Math and English taught by Ms. Reyes)
-INSERT INTO classes (subject_id, teacher_id, class_name)
-VALUES (1, 3, 'Math A'),
-       (2, 3, 'English A');
+  START TRANSACTION;
+    INSERT INTO `scores` (`player_id`,`game_id`,`points`,`recorded_by`) VALUES (p_player_id, p_game_id, p_points, p_recorded_by);
+  COMMIT;
+END$$
+DELIMITER ;
 
--- Enroll students in classes
-INSERT INTO enrollments (class_id, student_id)
-VALUES (1, 1), (1, 2), (2, 1), (2, 2);
+-- Sample seed data (safe minimal set)
+INSERT IGNORE INTO `roles` (`id`,`name`) VALUES (1,'user'), (2,'admin');
+INSERT IGNORE INTO `users` (`id`,`username`,`email`,`password_hash`,`role_id`) VALUES
+  (1,'admin','admin@example.com','$2y$10$placeholderhash',2);
 
--- Sample assessments
-INSERT INTO assessments (class_id, title, total_score)
-VALUES (1, 'Quiz 1', 20),
-       (1, 'Quiz 2', 20),
-       (2, 'Activity', 30);
+INSERT IGNORE INTO `teams` (`id`,`name`) VALUES (1,'Blue Team'), (2,'Red Team');
+INSERT IGNORE INTO `players` (`id`,`team_id`,`display_name`,`email`) VALUES
+  (1,1,'Alice','alice@example.com'),
+  (2,2,'Bob','bob@example.com');
 
--- Sample scores
-INSERT INTO scores (assessment_id, student_id, score)
-VALUES 
-(1, 1, 18),
-(2, 1, 15),
-(3, 1, 28),
-(1, 2, 17),
-(2, 2, 16),
-(3, 2, 27);
+INSERT IGNORE INTO `games` (`id`,`name`,`scheduled_at`) VALUES
+  (1,'Qualifier','2026-02-15 18:00:00');
 
+-- Example of using stored procedure:
+-- CALL add_score(1,1,10,1);
+
+-- Helpful view: leaderboard
+CREATE OR REPLACE VIEW `leaderboard` AS
+SELECT p.id AS player_id, p.display_name, p.total_score, t.name AS team_name
+FROM players p
+LEFT JOIN teams t ON p.team_id = t.id
+ORDER BY p.total_score DESC;
+
+-- Ensure basic privileges (note: run as admin user)
+-- GRANT SELECT, INSERT, UPDATE, DELETE ON scoresafe.* TO 'app_user'@'localhost';
+
+-- ...existing code...
