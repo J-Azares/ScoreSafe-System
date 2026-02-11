@@ -77,4 +77,30 @@ app.get('/dashboard/:id', (req, res) => {
     });
 });
 
+// Login page (GET)
+app.get('/login', (req, res) => {
+    res.render('login'); // make sure login.ejs exists in views/
+});
+
+// Dashboard page (GET)
+app.get('/dashboard/:id', (req, res) => {
+    const studentId = req.params.id;
+
+    const sql = `
+        SELECT s.subject_name, a.title AS assessment, sc.score, a.total_score
+        FROM scores sc
+        JOIN assessments a ON sc.assessment_id = a.assessment_id
+        JOIN classes c ON a.class_id = c.class_id
+        JOIN subjects s ON c.subject_id = s.subject_id
+        WHERE sc.student_id = ?;
+    `;
+
+    db.query(sql, [studentId], (err, results) => {
+        if (err) throw err;
+        res.render('dashboard', { scores: results });
+    });
+});
+
+
+
 app.listen(3000, () => console.log('Server running on http://localhost:3000'));
