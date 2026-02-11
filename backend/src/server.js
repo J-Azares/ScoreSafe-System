@@ -33,7 +33,7 @@ db.connect((err) => {
 });
 
 app.get('/login', (req, res) => {
-    res.sendFile(path.join(__dirname, 'login.html'));
+    res.sendFile(path.join(__dirname, 'views/ogin.ejs'));
 });
 
 app.post('/login', (req, res) => {
@@ -105,6 +105,6 @@ app.get('/login', (req, res) => {
     res.render('login');  // EJS automatically looks in views/
 });
 
-app.use(express.static(path.join(__dirname, 'src')));
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.listen(3000, () => console.log('Server running on http://localhost:3000'));
