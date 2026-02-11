@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ScoreSafe</title>
+</head>
+<body>
+  <h2>Add Score</h2>
+
+  <input id="student" placeholder="Student ID">
+  <input id="subject" placeholder="Subject ID">
+  <input id="score" placeholder="Score">
+  <button onclick="addScore()">Add</button>
+
+  <h2>Scores</h2>
+  <ul id="list"></ul>
+
+<script>
+function loadScores() {
+  fetch('/api/scores')
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById('list').innerHTML = data.map(s =>
+        `<li>
+          ${s.name} - ${s.subject_name}: ${s.score}
+          <button onclick="deleteScore(${s.score_id})">Delete</button>
+        </li>`
+      ).join('');
+    });
+}
+
+function addScore() {
+  fetch('/api/scores', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      student_id: student.value,
+      subject_id: subject.value,
+      score: score.value
+    })
+  }).then(loadScores);
+}
+
+function deleteScore(id) {
+  fetch('/api/scores/' + id, { method: 'DELETE' })
+    .then(loadScores);
+}
+
+loadScores();
+</script>
+</body>
+</html>
