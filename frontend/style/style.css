@@ -1,0 +1,166 @@
+/* -----------------------------
+   Reset / Basic Styles
+----------------------------- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    background-color: #f9f9f9;
+    color: #333;
+}
+
+/* -----------------------------
+   Header / Navigation
+----------------------------- */
+header {
+    background-color: #4CAF50;
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header h1 {
+    font-size: 24px;
+}
+
+header nav a {
+    color: white;
+    text-decoration: none;
+    margin-left: 20px;
+    font-weight: bold;
+}
+
+header nav a:hover {
+    text-decoration: underline;
+}
+
+/* -----------------------------
+   Main Layout
+----------------------------- */
+main {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 20px;
+}
+
+/* Sidebar for dashboard pages */
+aside {
+    flex: 1 1 200px;
+    background-color: #e8f5e9;
+    padding: 20px;
+    margin-right: 20px;
+    border-radius: 8px;
+    height: fit-content;
+}
+
+aside ul {
+    list-style-type: none;
+}
+
+aside ul li {
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+/* Section (content area) */
+section {
+    flex: 3 1 600px;
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+
+/* -----------------------------
+   Forms
+----------------------------- */
+form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+form input, form textarea, form select {
+    width: 100%;
+    padding: 8px 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+form button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+form button:hover {
+    background-color: #45a049;
+}
+
+/* -----------------------------
+   Tables
+----------------------------- */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 15px;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+}
+
+th, td {
+    padding: 10px;
+    text-align: left;
+}
+
+/* -----------------------------
+   Buttons / Links
+----------------------------- */
+a {
+    color: #4CAF50;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* -----------------------------
+   Footer
+----------------------------- */
+footer {
+    background-color: #f1f1f1;
+    text-align: center;
+    padding: 15px;
+    margin-top: 20px;
+    font-size: 14px;
+}
+
+/* -----------------------------
+   Responsive Design
+----------------------------- */
+@media(max-width: 768px) {
+    main {
+        flex-direction: column;
+    }
+    
+    aside {
+        margin-right: 0;
+        margin-bottom: 20px;
+    }
+}

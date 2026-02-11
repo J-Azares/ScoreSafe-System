@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ScoreSafe | Register</title>
+    <link rel="stylesheet" href="style/style.css">
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <h1>ScoreSafe</h1>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="login.html">Login</a>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <h2>Create an Account</h2>
+        <p>Please fill in the required information below.</p>
+
+        <form>
+            <!-- Full Name -->
+            <label for="fullname">Full Name</label><br>
+            <input type="text" id="fullname" name="fullname" required><br><br>
+
+            <!-- Email -->
+            <label for="email">Email Address</label><br>
+            <input type="email" id="email" name="email" required><br><br>
+
+            <!-- Student ID / Employee ID -->
+            <label for="userid">Student ID / Employee ID</label><br>
+            <input type="text" id="userid" name="userid" required><br><br>
+
+            <!-- Password -->
+            <label for="password">Password</label><br>
+            <input type="password" id="password" name="password" required><br><br>
+
+            <!-- Confirm Password -->
+            <label for="confirm">Confirm Password</label><br>
+            <input type="password" id="confirm" name="confirm" required><br><br>
+
+            <!-- Role Selection -->
+            <label>Register as:</label><br>
+            <input type="radio" id="student" name="role" value="student" required>
+            <label for="student">Student</label><br>
+
+            <input type="radio" id="teacher" name="role" value="teacher">
+            <label for="teacher">Teacher</label><br><br>
+
+            <!-- Submit Button -->
+            <button type="submit">Register</button>
+        </form>
+
+        <p>
+            Already have an account?
+            <a href="login.html">Login here</a>
+        </p>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>ScoreSafe © 2026</p>
+    </footer>
+
+</body>
+</html>
