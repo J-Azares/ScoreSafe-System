@@ -1,0 +1,260 @@
+/* =========================
+   RESET & BASE
+========================= */
+*,
+*::before,
+*::after { 
+    box-sizing:border-box; 
+    margin:0; 
+    padding:0; 
+}
+
+html {
+    scroll-behavior:smooth;
+}
+
+html, body { 
+    max-width:100%; 
+    overflow-x:hidden; 
+}
+
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  background-color:#fff;
+  color:#1f2937;
+  line-height:1.6;
+
+  /* IMPORTANT: para hindi matakpan ng fixed header */
+  padding-top:90px;
+}
+
+img { 
+    max-width:100%; 
+    display:block; 
+}
+
+a { 
+    text-decoration:none; 
+    color:inherit; 
+}
+
+ul { 
+    list-style:none; 
+}
+
+/* =========================
+   CONTAINER
+========================= */
+.container {
+  max-width:1200px;
+  margin-inline:auto;
+  padding-inline:1.25rem;
+}
+
+/* =========================
+   TYPOGRAPHY
+========================= */
+h1,h2,h3,h4 { 
+    color:#0f172a; 
+    font-weight:600; 
+    line-height:1.25; 
+}
+
+p { 
+    color:#4b5563; 
+}
+
+/* =========================
+   BUTTONS
+========================= */
+.btn {
+  display:inline-flex; 
+  align-items:center; 
+  justify-content:center;
+  padding:.65rem 1.25rem; 
+  font-size:.95rem; 
+  font-weight:600;
+  border-radius:6px; 
+  border:1px solid transparent; 
+  cursor:pointer;
+  transition:.15s;
+}
+
+.btn-primary { 
+    background:#1d4ed8; 
+    color:#fff; 
+}
+
+.btn-primary:hover { 
+    background:#1e40af; 
+}
+
+.btn-outline { 
+    background:transparent; 
+    border-color:#1d4ed8; 
+    color:#1d4ed8; 
+}
+
+.btn-outline:hover { 
+    background:#1d4ed8; 
+    color:#fff; 
+}
+
+/* =========================
+   HEADER (FIXED)
+========================= */
+.site-header { 
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:90px;
+
+    background:#fff; 
+    border-bottom:1px solid #e5e7eb;
+    z-index:1000;
+}
+
+.header-layout { 
+    display:flex; 
+    justify-content:space-between; 
+    align-items:center; 
+    height:100%;
+}
+
+.brand-name { 
+    font-size:1.25rem; 
+    font-weight:700; 
+    color:#1e3a8a; 
+}
+
+.header-cta { 
+    display:flex; 
+    gap:.75rem; 
+}
+
+
+/* =========================
+   SECTION HEADER
+========================= */
+.section-header { 
+    text-align:center; 
+    max-width:680px; 
+    margin:0 auto 3rem; 
+}
+
+.section-header h2 { 
+    font-size:2rem; 
+    margin-bottom:.5rem; 
+}
+
+/* =========================
+   FOOTER
+========================= */
+.site-footer { 
+    background:#0b1220; 
+    color:#c7d2fe; 
+}
+
+.footer-layout { 
+    display:grid; 
+    grid-template-columns:2fr 1fr 1fr; 
+    gap:2.5rem; 
+    padding:3.5rem 0 2.5rem; 
+    align-items:start; 
+}
+
+.footer-info strong { 
+    font-size:1.1rem; 
+    color:#fff; 
+}
+
+.footer-info p { 
+    margin-top:.5rem; 
+    font-size:.95rem; 
+    max-width:380px; 
+}
+
+.footer-nav h4 { 
+    color:#fff; 
+    font-size:1rem; 
+    margin-bottom:.75rem; 
+}
+
+.footer-nav ul { 
+    display:grid; 
+    gap:.5rem; 
+}
+
+.footer-nav a { 
+    color:#c7d2fe; 
+    font-size:.95rem; 
+}
+
+.footer-nav a:hover { 
+    color:#fff; 
+}
+
+.footer-bottom { 
+    border-top:1px solid rgba(255,255,255,.08); 
+    text-align:center; 
+    padding:1rem 1rem 1.25rem; 
+    font-size:.9rem; 
+    color:#a5b4fc; 
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width:1024px) { 
+    .hero-layout { 
+        grid-template-columns:1fr; 
+    }
+
+    .hero-media {
+        order:-1;
+    }
+}
+
+@media (max-width:768px) { 
+    .hero-actions { 
+        flex-direction:column; 
+        align-items:stretch; 
+    }
+}
+
+@media (max-width:420px) { 
+    body { 
+        font-size:15px; 
+    }
+
+    .hero h1 { 
+        font-size:1.6rem; 
+    }
+
+    .hero { 
+        padding:3.5rem 0 3rem; 
+    }
+}
+
+@media (max-width:900px) { 
+    .footer-layout { 
+        grid-template-columns:1fr 1fr; gap:2rem; 
+    } 
+
+    .footer-info { 
+        grid-column:1/-1; 
+    } 
+}
+
+@media (max-width:600px) { 
+    .footer-layout { 
+        grid-template-columns:1fr; 
+        gap:1.75rem; 
+        text-align:center; 
+    } 
+
+    .footer-info p { 
+        margin-inline:auto; 
+    } 
+}
