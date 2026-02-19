@@ -293,6 +293,16 @@ label{
 }
 
 /* ========================
+   Messages
+======================== */
+#studentMsg, #subjectMsg {
+  margin-top: 16px;
+  font-size: 14px;
+  color: var(--primary-color);
+  font-weight: 500;
+}
+
+/* ========================
    Buttons
 ======================== */
 button.btn{
