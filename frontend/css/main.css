@@ -425,3 +425,71 @@ button.btn.outline:hover {
     padding:16px 12px;
   }
 }
+
+/* ========================
+   Form Elements
+======================== */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: var(--text-color);
+  font-size: 14px;
+}
+
+.form-group select,
+.form-group input[type="number"],
+.form-group input[type="file"] {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: 16px;
+  background: var(--card-background);
+  color: var(--text-color);
+  transition: var(--transition);
+  box-sizing: border-box;
+}
+
+.form-group select:focus,
+.form-group input[type="number"]:focus,
+.form-group input[type="file"]:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+  outline: none;
+}
+
+.form-group select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 12px center;
+  background-repeat: no-repeat;
+  background-size: 16px;
+  padding-right: 40px;
+}
+
+.form-group input[type="file"] {
+  padding: 10px;
+  border-style: dashed;
+}
+
+.form-group input[type="file"]::file-selector-button {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  margin-right: 12px;
+  transition: var(--transition);
+}
+
+.form-group input[type="file"]::file-selector-button:hover {
+  background: #1d4ed8;
+}

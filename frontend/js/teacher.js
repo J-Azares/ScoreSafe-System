@@ -21,7 +21,7 @@
 		items.forEach(it => {
 			const o = document.createElement('option');
 			o.value = it.email || it.name || it;
-			o.textContent = it.email || it.name || it;
+			o.textContent = it.name || it.email || it;
 			selectEl.appendChild(o);
 		});
 	}
@@ -162,13 +162,14 @@
 			const sEls = [byId('studentSelect'), byId('studentSelectUpload'), byId('studentSelect')];
 			const suEls = [byId('subjectSelect'), byId('subjectSelectUpload'), byId('subjectSelectUpload')];
 			// use unique set
-			const studentOpts = students.map(s => ({ email: s.email }));
+			const studentOpts = students.map(s => ({ email: s.email, name: s.name }));
 			sEls.forEach(el => { if (el) populateSelect(el, studentOpts, '-- Select Student --'); });
 			suEls.forEach(el => { if (el) populateSelect(el, subjects, '-- Select Subject --'); });
 		}
 
 		function renderScoresTables() {
 			const records = read(RECORDS_KEY);
+			const students = read(STUDENTS_KEY);
 			document.querySelectorAll('#scoresTable').forEach(table => {
 				const tbody = table.querySelector('tbody');
 				tbody.innerHTML = '';
@@ -181,8 +182,10 @@
 				}
 				records.slice().reverse().forEach((r, idx) => {
 					const tr = document.createElement('tr');
+					const student = students.find(s => s.email === r.studentEmail);
+					const studentName = student ? student.name : r.studentEmail;
 					const paperLink = r.paperDataUrl ? `<a class="view-link" href="${r.paperDataUrl}" target="_blank">View</a>` : '';
-					tr.innerHTML = `<td>${r.studentEmail}</td><td>${r.subject}</td><td>${r.score || ''}</td><td>${paperLink}</td><td>${r.category}</td><td>${new Date(r.date).toLocaleString()}</td><td><button class="btn outline" data-idx="${idx}" data-action="delete-record">Delete</button></td>`;
+					tr.innerHTML = `<td>${studentName}</td><td>${r.subject}</td><td>${r.score || ''}</td><td>${paperLink}</td><td>${r.category}</td><td>${new Date(r.date).toLocaleString()}</td><td><button class="btn outline" data-idx="${idx}" data-action="edit-record">Edit</button> <button class="btn outline" data-idx="${idx}" data-action="delete-record">Delete</button></td>`;
 					tbody.appendChild(tr);
 				});
 			});
@@ -195,13 +198,30 @@
 				const subject = byId('subjectSelect').value;
 				const category = byId('categorySelect').value;
 				const score = byId('score').value;
+				const file = byId('paperFile').files[0];
 				if (!studentEmail || !subject || !category) return;
-				const records = read(RECORDS_KEY);
-				records.push({ studentEmail, subject, category, score: Number(score), date: Date.now() });
-				write(RECORDS_KEY, records);
-				recordForm.reset();
-				renderScoresTables();
-				broadcastUpdate();
+				const record = { studentEmail, subject, category, score: Number(score), date: Date.now() };
+				if (file) {
+					const reader = new FileReader();
+					reader.onload = function() {
+						record.paperName = file.name;
+						record.paperDataUrl = reader.result;
+						const records = read(RECORDS_KEY);
+						records.push(record);
+						write(RECORDS_KEY, records);
+						recordForm.reset();
+						renderScoresTables();
+						broadcastUpdate();
+					};
+					reader.readAsDataURL(file);
+				} else {
+					const records = read(RECORDS_KEY);
+					records.push(record);
+					write(RECORDS_KEY, records);
+					recordForm.reset();
+					renderScoresTables();
+					broadcastUpdate();
+				}
 			});
 		}
 
@@ -227,19 +247,63 @@
 			});
 		}
 
-		// delete records
+		// delete and edit records
 		document.addEventListener('click', e => {
 			const btn = e.target.closest('button[data-action]');
 			if (!btn) return;
+			const idx = Number(btn.dataset.idx);
+			let records = read(RECORDS_KEY);
+			const realIdx = records.length - 1 - idx;
 			if (btn.dataset.action === 'delete-record') {
-				const idx = Number(btn.dataset.idx);
-				let records = read(RECORDS_KEY);
-				// idx corresponds to reversed order used in render
-				const realIdx = records.length - 1 - idx;
 				records.splice(realIdx, 1);
 				write(RECORDS_KEY, records);
 				renderScoresTables();
 				broadcastUpdate();
+			} else if (btn.dataset.action === 'edit-record') {
+				const tr = btn.closest('tr');
+				const tds = tr.querySelectorAll('td');
+				const studentTd = tds[0];
+				const subjectTd = tds[1];
+				const scoreTd = tds[2];
+				const categoryTd = tds[4];
+				const actionsTd = tds[6];
+				const originalStudent = records[realIdx].studentEmail;
+				const originalSubject = records[realIdx].subject;
+				const originalScore = records[realIdx].score || '';
+				const originalCategory = records[realIdx].category;
+				const students = read(STUDENTS_KEY);
+				const subjects = read(SUBJECTS_KEY);
+				let studentSelect = '<select style="width: 150px;">';
+				students.forEach(s => {
+					studentSelect += `<option value="${s.email}" ${s.email === originalStudent ? 'selected' : ''}>${s.email}</option>`;
+				});
+				studentSelect += '</select>';
+				let subjectSelect = '<select style="width: 100px;">';
+				subjects.forEach(s => {
+					subjectSelect += `<option value="${s}" ${s === originalSubject ? 'selected' : ''}>${s}</option>`;
+				});
+				subjectSelect += '</select>';
+				studentTd.innerHTML = studentSelect;
+				subjectTd.innerHTML = subjectSelect;
+				scoreTd.innerHTML = `<input type="number" value="${originalScore}" style="width: 60px;">`;
+				categoryTd.innerHTML = `<select style="width: 100px;"><option value="Performance" ${originalCategory === 'Performance' ? 'selected' : ''}>Performance</option><option value="Activity" ${originalCategory === 'Activity' ? 'selected' : ''}>Activity</option><option value="Quiz" ${originalCategory === 'Quiz' ? 'selected' : ''}>Quiz</option><option value="Recitation" ${originalCategory === 'Recitation' ? 'selected' : ''}>Recitation</option><option value="Examination" ${originalCategory === 'Examination' ? 'selected' : ''}>Examination</option><option value="Attendance" ${originalCategory === 'Attendance' ? 'selected' : ''}>Attendance</option></select>`;
+				actionsTd.innerHTML = `<button class="btn" data-idx="${idx}" data-action="save-edit">Save</button> <button class="btn outline" data-idx="${idx}" data-action="cancel-edit">Cancel</button>`;
+			} else if (btn.dataset.action === 'save-edit') {
+				const tr = btn.closest('tr');
+				const tds = tr.querySelectorAll('td');
+				const studentSelect = tds[0].querySelector('select');
+				const subjectSelect = tds[1].querySelector('select');
+				const scoreInput = tds[2].querySelector('input');
+				const categorySelect = tds[4].querySelector('select');
+				records[realIdx].studentEmail = studentSelect.value;
+				records[realIdx].subject = subjectSelect.value;
+				records[realIdx].score = Number(scoreInput.value);
+				records[realIdx].category = categorySelect.value;
+				write(RECORDS_KEY, records);
+				renderScoresTables();
+				broadcastUpdate();
+			} else if (btn.dataset.action === 'cancel-edit') {
+				renderScoresTables();
 			}
 		});
 
