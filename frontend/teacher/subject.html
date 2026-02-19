@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ScoreSafe | Subject</title>
+<link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="container nav-wrapper">
+    <div class="logo">ScoreSafe</div>
+    <div class="hamburger" id="hamburger">&#9776;</div>
+    <nav>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="student.html">Student</a>
+      <a class="active" href="subject.html">Subject</a>
+      <a href="record-score.html">Record Score</a>
+      <a href="upload-paper.html">Upload Paper</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+
+  <section class="card">
+    <form id="addSubjectForm">
+      <div class="form-group">
+        <label for="subjectName">Subject Name</label>
+        <input type="text" id="subjectName" placeholder="Mathematics" required>
+      </div>
+      <button type="submit" class="btn">Add Subject</button>
+    </form>
+    <p id="subjectMsg"></p>
+  </section>
+
+  <section class="card table-section">
+    <div class="table-wrapper">
+      <table id="subjectsTable">
+        <thead>
+          <tr>
+            <th>Subject Name</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="empty-row"><td colspan="3">No subjects yet</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-container">
+    <p>&copy; 2026 ScoreSafe. All rights reserved.</p>
+  </div>
+</footer>
+
+<script src="../js/teacher.js"></script>
+</body>
+</html>

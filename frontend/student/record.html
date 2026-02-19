@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ScoreSafe | Dashboard</title>
+<title>ScoreSafe | My Records</title>
 <link rel="stylesheet" href="../css/main.css">
 </head>
 <body>
@@ -13,34 +13,22 @@
     <div class="logo">ScoreSafe</div>
     <div class="hamburger" id="hamburger">&#9776;</div>
     <nav>
-      <a class="active" href="dashboard.html">Dashboard</a>
-      <a href="record.html">My Records</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a class="active" href="record.html">My Records</a>
     </nav>
   </div>
 </header>
 
 <main class="container">
 
-  <!-- Stats -->
-  <section class="stats-grid">
-    <div class="stat-card">
-      <p class="stat-label">Total Scores</p>
-      <h3 id="studentTotalScores">0</h3>
-    </div>
-    <div class="stat-card">
-      <p class="stat-label">Subjects Enrolled</p>
-      <h3 id="studentTotalSubjects">0</h3>
-    </div>
-  </section>
-
-  <!-- Recent Records -->
+  <!-- Full Scores Table -->
   <section class="card table-section">
     <div class="table-header">
-      <h3>Recent Scores</h3>
-      <input type="text" id="studentSearchInput" placeholder="Search subject or category...">
+      <h3>All Scores & Papers</h3>
+      <input type="text" id="recordsSearch" placeholder="Search by subject or category...">
     </div>
     <div class="table-wrapper">
-      <table id="studentScoresTable">
+      <table id="myRecordsTable">
         <thead>
           <tr>
             <th>Subject</th>

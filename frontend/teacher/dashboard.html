@@ -1,52 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>ScoreSafe | Teacher</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <link rel="stylesheet" href="../css/teacher.css">
+<meta charset="UTF-8">
+<title>ScoreSafe | Dashboard</title>
+<link rel="stylesheet" href="../css/main.css">
 </head>
 <body>
-
-<header class="site-header">
-  <div class="container header-layout">
-    <a class="brand-name" href="index.html">ScoreSafe</a>
-
+<header class="topbar">
+  <div class="container nav-wrapper">
+    <div class="logo">ScoreSafe</div>
+    <div class="hamburger" id="hamburger">&#9776;</div>
     <nav>
-      <a href="dashboard.html">Dashboard</a>
-      <a href="students.html">Student</a>
-      <a href="subjects.html">Subject</a>
+      <a class="active" href="dashboard.html">Dashboard</a>
+      <a href="student.html">Student</a>
+      <a href="subject.html">Subject</a>
       <a href="record-score.html">Record Score</a>
       <a href="upload-paper.html">Upload Paper</a>
-      <a href="score.html">Score Management</a>
-    </nav>
-
-    <div class="header-cta">
-      <a href="login.html" class="btn btn-outline">Logout</a>
-    </div>
-</header>
-
-<footer class="site-footer">
-  <div class="container footer-layout">
-    <div class="footer-info">
-      <strong>ScoreSafe</strong>
-      <p></p>
-    </div>
-    <nav class="footer-nav" aria-label="Footer navigation">
-      <h4>Pages</h4>
-      <ul>
-        <li><a href="index.html">Home</a></li>
-        <li><a href="login.html">Login</a></li>
-        <li><a href="register.html">Register</a></li>
-      </ul>
     </nav>
   </div>
-  <div class="footer-bottom">
-    <p>© 2026 ScoreSafe. All rights reserved.</p>
+</header>
+
+<main class="container">
+
+  <!-- Stats -->
+  <section class="stats-grid">
+    <div class="stat-card">
+      <p class="stat-label">Total Records</p>
+      <h3 id="totalRecords">0</h3>
+    </div>
+    <div class="stat-card">
+      <p class="stat-label">Total Students</p>
+      <h3 id="totalStudents">0</h3>
+    </div>
+    <div class="stat-card">
+      <p class="stat-label">Subjects</p>
+      <h3 id="totalSubjects">0</h3>
+    </div>
+  </section>
+
+  <!-- Recent Score Records -->
+  <section class="card table-section">
+    <div class="table-header">
+      <h3>Recent Records</h3>
+      <input type="text" id="searchInput" placeholder="Search student, subject, or category...">
+    </div>
+    <div class="table-wrapper">
+      <table id="scoresTable">
+        <thead>
+          <tr>
+            <th>Student Email</th>
+            <th>Subject</th>
+            <th>Score</th>
+            <th>Paper</th>
+            <th>Category</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="empty-row"><td colspan="6">No records yet</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-container">
+    <p>&copy; 2026 ScoreSafe. All rights reserved.</p>
   </div>
 </footer>
 
-<script src="../frontend/js/teacher.js"></script>
+<script src="../js/teacher.js"></script>
 </body>
 </html>

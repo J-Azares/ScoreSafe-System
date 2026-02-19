@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ScoreSafe | Record Score</title>
+<link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="container nav-wrapper">
+    <div class="logo">ScoreSafe</div>
+    <div class="hamburger" id="hamburger">&#9776;</div>
+    <nav>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="student.html">Student</a>
+      <a href="subject.html">Subject</a>
+      <a class="active" href="record-score.html">Record Score</a>
+      <a href="upload-paper.html">Upload Paper</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+
+  <section class="card">
+    <form id="recordScoreForm">
+      <div class="form-group">
+        <label for="studentSelect">Student Email</label>
+        <select id="studentSelect" required>
+          <option value="">-- Select Student --</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="subjectSelect">Subject</label>
+        <select id="subjectSelect" required>
+          <option value="">-- Select Subject --</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="categorySelect">Category</label>
+        <select id="categorySelect" required>
+          <option value="">-- Select Category --</option>
+          <option value="Performance">Performance</option>
+          <option value="Activity">Activity</option>
+          <option value="Quiz">Quiz</option>
+          <option value="Recitation">Recitation</option>
+          <option value="Examination">Examination</option>
+          <option value="Attendance">Attendance</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="score">Score</label>
+        <input type="number" id="score" min="0" max="100" required>
+      </div>
+
+      <button type="submit" class="btn">Record Score</button>
+    </form>
+    <p id="msg"></p>
+  </section>
+
+  <section class="card table-section">
+    <div class="table-wrapper">
+      <table id="scoresTable">
+        <thead>
+          <tr>
+            <th>Student Email</th>
+            <th>Subject</th>
+            <th>Score</th>
+            <th>Paper</th>
+            <th>Category</th>
+            <th>Date</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="empty-row"><td colspan="7">No records yet</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-container">
+    <p>&copy; 2026 ScoreSafe. All rights reserved.</p>
+  </div>
+</footer>
+
+<script src="../js/teacher.js"></script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ScoreSafe | Student</title>
+<link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="container nav-wrapper">
+    <div class="logo">ScoreSafe</div>
+    <div class="hamburger" id="hamburger">&#9776;</div>
+    <nav>
+      <a href="dashboard.html">Dashboard</a>
+      <a class="active" href="student.html">Student</a>
+      <a href="subject.html">Subject</a>
+      <a href="record-score.html">Record Score</a>
+      <a href="upload-paper.html">Upload Paper</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+
+  <section class="card">
+    <form id="addStudentForm">
+      <div class="form-group">
+        <label for="studentEmail">Email</label>
+        <input type="email" id="studentEmail" placeholder="student@example.com" required>
+      </div>
+      <div class="form-group">
+        <label for="studentName">Full Name</label>
+        <input type="text" id="studentName" placeholder="John Doe" required>
+      </div>
+      <button type="submit" class="btn">Add Student</button>
+    </form>
+    <p id="studentMsg"></p>
+  </section>
+
+  <section class="card table-section">
+    <div class="table-wrapper">
+      <table id="studentsTable">
+        <thead>
+          <tr>
+            <th>Email</th>
+            <th>Full Name</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="empty-row"><td colspan="4">No students yet</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-container">
+    <p>&copy; 2026 ScoreSafe. All rights reserved.</p>
+  </div>
+</footer>
+
+<script src="../js/teacher.js"></script>
+</body>
+</html>
