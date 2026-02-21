@@ -103,6 +103,8 @@ nav a.active{
   font-size:28px;
   color:white;
   cursor:pointer;
+  position:absolute;
+  right:20px;
 }
 
 /* Mobile sidebar nav */
@@ -111,19 +113,21 @@ nav.active{
   flex-direction:column;
   position:fixed;
   top:0;
-  left:0;
+  right:0;
   width:220px;
   height:100%;
-  background:#0f172a;
+  background: var(--primary-color);
   padding-top:60px;
   z-index:999;
   gap:12px;
   padding-left:20px;
+  align-items:flex-start;
 }
 
 nav.active a{
   margin-left:0;
   font-size:16px;
+  text-align:left;
 }
 
 /* ========================
@@ -424,6 +428,10 @@ button.btn.outline:hover {
   .stats-grid{
     grid-template-columns:1fr;
   }
+
+  .topbar{
+    padding:30px 0;
+  }
 }
 
 @media screen and (max-width:600px){
@@ -432,7 +440,15 @@ button.btn.outline:hover {
   }
 
   .container{
-    padding:16px 12px;
+    padding:5px 24px 5px;
+  }
+
+  .table-wrapper table {
+    min-width: 800px;
+  }
+
+  table td {
+    white-space: nowrap;
   }
 }
 

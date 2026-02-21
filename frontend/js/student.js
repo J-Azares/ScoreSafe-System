@@ -60,6 +60,15 @@
 
 	function init(){
 		document.addEventListener('DOMContentLoaded', ()=>{
+			// Hamburger menu toggle
+			const hamburger = byId('hamburger');
+			const nav = document.querySelector('nav');
+			if (hamburger && nav) {
+				hamburger.addEventListener('click', () => {
+					nav.classList.toggle('active');
+				});
+			}
+
 			renderStudentDashboard();
 			renderRecordsPage();
 			// simple search handling

@@ -286,7 +286,7 @@
 				studentTd.innerHTML = studentSelect;
 				subjectTd.innerHTML = subjectSelect;
 				scoreTd.innerHTML = `<input type="number" value="${originalScore}" style="width: 60px;">`;
-				categoryTd.innerHTML = `<select style="width: 100px;"><option value="Performance" ${originalCategory === 'Performance' ? 'selected' : ''}>Performance</option><option value="Activity" ${originalCategory === 'Activity' ? 'selected' : ''}>Activity</option><option value="Quiz" ${originalCategory === 'Quiz' ? 'selected' : ''}>Quiz</option><option value="Recitation" ${originalCategory === 'Recitation' ? 'selected' : ''}>Recitation</option><option value="Examination" ${originalCategory === 'Examination' ? 'selected' : ''}>Examination</option><option value="Attendance" ${originalCategory === 'Attendance' ? 'selected' : ''}>Attendance</option></select>`;
+				categoryTd.innerHTML = `<select style="width: 100px;"><option value="Performance" ${originalCategory === 'Performance' ? 'selected' : ''}>Performance</option><option value="Activity" ${originalCategory === 'Activity' ? 'selected' : ''}>Activity</option><option value="Quiz" ${originalCategory === 'Quiz' ? 'selected' : ''}>Quiz</option><option value="Recitation" ${originalCategory === 'Recitation' ? 'selected' : ''}>Recitation</option><option value="Examination" ${originalCategory === 'Examination' ? 'selected' : ''}>Examination</option></select>`;
 				actionsTd.innerHTML = `<button class="btn" data-idx="${idx}" data-action="save-edit">Save</button> <button class="btn outline" data-idx="${idx}" data-action="cancel-edit">Cancel</button>`;
 			} else if (btn.dataset.action === 'save-edit') {
 				const tr = btn.closest('tr');
@@ -362,6 +362,15 @@
 
 	// Detect which page to init
 	document.addEventListener('DOMContentLoaded', () => {
+		// Hamburger menu toggle
+		const hamburger = byId('hamburger');
+		const nav = document.querySelector('nav');
+		if (hamburger && nav) {
+			hamburger.addEventListener('click', () => {
+				nav.classList.toggle('active');
+			});
+		}
+
 		// Students page
 		if (byId('addStudentForm')) initStudentsPage();
 		if (byId('addSubjectForm')) initSubjectsPage();
