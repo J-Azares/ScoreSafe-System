@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>ScoreSafe | Dashboard</title>
 <link rel="stylesheet" href="../css/main.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
 <header class="topbar">
@@ -11,10 +12,10 @@
     <div class="logo">ScoreSafe</div>
     <div class="hamburger" id="hamburger">&#9776;</div>
     <nav>
-      <a class="active" href="dashboard.html">Dashboard</a>
-      <a href="student.html">Student</a>
-      <a href="subject.html">Subject</a>
-      <a href="record-score.html">Record</a>
+      <a class="active" href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+      <a href="student.html"><i class="fas fa-user-graduate"></i> Student</a>
+      <a href="subject.html"><i class="fas fa-book"></i> Subject</a>
+      <a href="record-score.html"><i class="fas fa-plus-circle"></i> Record</a>
     </nav>
   </div>
 </header>
@@ -24,16 +25,31 @@
   <!-- Stats -->
   <section class="stats-grid">
     <div class="stat-card">
-      <p class="stat-label">Total Records</p>
-      <h3 id="totalRecords">0</h3>
+      <div class="stat-icon">
+        <i class="fas fa-file-alt"></i>
+      </div>
+      <div class="stat-content">
+        <p class="stat-label">Total Records</p>
+        <h3 id="totalRecords">0</h3>
+      </div>
     </div>
     <div class="stat-card">
-      <p class="stat-label">Total Students</p>
-      <h3 id="totalStudents">0</h3>
+      <div class="stat-icon">
+        <i class="fas fa-users"></i>
+      </div>
+      <div class="stat-content">
+        <p class="stat-label">Total Students</p>
+        <h3 id="totalStudents">0</h3>
+      </div>
     </div>
     <div class="stat-card">
-      <p class="stat-label">Subjects</p>
-      <h3 id="totalSubjects">0</h3>
+      <div class="stat-icon">
+        <i class="fas fa-book-open"></i>
+      </div>
+      <div class="stat-content">
+        <p class="stat-label">Subjects</p>
+        <h3 id="totalSubjects">0</h3>
+      </div>
     </div>
   </section>
 
@@ -41,7 +57,10 @@
   <section class="card table-section">
     <div class="table-header">
       <h3>Recent Records</h3>
-      <input type="text" id="searchInput" placeholder="Search student, subject, or category...">
+      <div class="search-container">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" id="searchInput" placeholder="Search student, subject, or category...">
+      </div>
     </div>
     <div class="table-wrapper">
       <table id="scoresTable">

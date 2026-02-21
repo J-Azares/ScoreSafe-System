@@ -2,9 +2,9 @@
    Global
 ======================== */
 :root {
-  --primary-color: #1e40af; /* Professional blue */
-  --secondary-color: #64748b; /* Slate gray */
-  --accent-color: #06b6d4; /* Cyan accent */
+  --primary-color: #800000; /* Maroon */
+  --secondary-color: #A0522D; /* Sienna */
+  --accent-color: #DC143C; /* Crimson accent */
   --background-color: #f8fafc; /* Light gray background */
   --card-background: #ffffff;
   --text-color: #1e293b;
@@ -84,6 +84,9 @@ nav a{
   font-size:14px;
   font-weight:500;
   transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 nav a:hover{
@@ -172,17 +175,31 @@ nav.active a{
   padding:18px 20px;
   border-radius:12px;
   box-shadow:0 8px 20px rgba(0,0,0,.05);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stat-icon {
+  font-size: 24px;
+  color: var(--primary-color);
+  flex-shrink: 0;
+}
+
+.stat-content {
+  flex: 1;
 }
 
 .stat-label{
   font-size:15px;
   color:#6b7280;
-  margin-bottom:6px;
+  margin-bottom:4px;
 }
 
 .stat-card h3{
   font-size:26px;
   font-weight:700;
+  margin: 0;
 }
 
 /* ========================
@@ -192,6 +209,9 @@ nav.active a{
   padding: 0;
   border-radius: var(--border-radius);
   overflow: hidden;
+  box-shadow: var(--shadow);
+  background: var(--card-background);
+  border: 1px solid var(--border-color);
 }
 
 .table-header{
@@ -199,7 +219,8 @@ nav.active a{
   align-items: center;
   justify-content: space-between;
   padding: 24px 32px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 2px solid var(--border-color);
+  background: linear-gradient(135deg, var(--background-color) 0%, #f1f5f9 100%);
 }
 
 .table-header h3{
@@ -219,35 +240,88 @@ nav.active a{
 
 .table-header input:focus {
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+  box-shadow: 0 0 0 3px rgba(128, 0, 0, 0.1);
+}
+
+.search-container {
+  position: relative;
+  max-width: 280px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280;
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.search-container input {
+  padding-left: 35px;
 }
 
 .table-wrapper{
   overflow-x: auto;
+  max-height: 600px;
+  overflow-y: auto;
 }
 
 table{
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: 14px;
-  border-radius: var(--border-radius);
-  overflow: hidden;
+  background: var(--card-background);
 }
 
 
 thead{
-  background: var(--background-color);
+  background: linear-gradient(135deg, var(--primary-color) 0%, #8B1A1A 100%);
+  color: white;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
-th, td{
+th{
+  padding: 16px 20px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 14px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+  position: relative;
+}
+
+th:first-child {
+  border-top-left-radius: var(--border-radius);
+}
+
+th:last-child {
+  border-top-right-radius: var(--border-radius);
+}
+
+td{
   padding: 16px 20px;
   border-bottom: 1px solid var(--border-color);
-  text-align: center;
-  font-weight: 500;
+  transition: var(--transition);
 }
 
-tbody tr:hover{
-  background: rgba(30, 64, 175, 0.02);
+tbody tr{
+  transition: var(--transition);
+}
+
+tbody tr:nth-child(even){
+  background: rgba(128, 0, 0, 0.02);
+}
+
+tbody tr:nth-child(odd){
+  background: var(--card-background);
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
 }
 
 .view-link{
@@ -282,7 +356,7 @@ input, select{
 input:focus, select:focus{
   border-color: var(--primary-color);
   outline: none;
-  box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+  box-shadow: 0 0 0 3px rgba(128, 0, 0, 0.1);
 }
 
 input[type="file"]{
@@ -485,7 +559,7 @@ button.btn.outline:hover {
 .form-group input[type="number"]:focus,
 .form-group input[type="file"]:focus {
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+  box-shadow: 0 0 0 3px rgba(128, 0, 0, 0.1);
   outline: none;
 }
 
@@ -517,5 +591,5 @@ button.btn.outline:hover {
 }
 
 .form-group input[type="file"]::file-selector-button:hover {
-  background: #1d4ed8;
+  background: var(--accent-color);
 }

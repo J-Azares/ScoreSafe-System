@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ScoreSafe | Record</title>
 <link rel="stylesheet" href="../css/main.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
 
@@ -13,8 +14,8 @@
     <div class="logo">ScoreSafe</div>
     <div class="hamburger" id="hamburger">&#9776;</div>
     <nav>
-      <a href="dashboard.html">Dashboard</a>
-      <a class="active" href="record.html">Record</a>
+      <a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+      <a class="active" href="record.html"><i class="fas fa-chart-line"></i> Record</a>
     </nav>
   </div>
 </header>
@@ -25,7 +26,10 @@
   <section class="card table-section">
     <div class="table-header">
       <h3>All Scores & Papers</h3>
-      <input type="text" id="recordsSearch" placeholder="Search by subject or category...">
+      <div class="search-container">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" id="recordsSearch" placeholder="Search by subject or category...">
+      </div>
     </div>
     <div class="table-wrapper">
       <table id="myRecordsTable">
