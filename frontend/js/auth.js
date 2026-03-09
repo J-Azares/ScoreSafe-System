@@ -1,54 +1,62 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const loginForm = document.getElementById('loginForm');
-  const registerForm = document.getElementById('registerForm');
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
 
-  if (loginForm) {
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-      
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username: email, password })
-        });
-
-        if (!res.ok) return;
-
-        const data = await res.json();
-        if (data.token) {
-          localStorage.setItem('authToken', data.token);
-          localStorage.setItem('username', email);
+    const showMsg = (elId, text, isError = true) => {
+        const el = document.getElementById(elId);
+        if (el) {
+            el.textContent = text;
+            el.style.color = isError ? "#ef4444" : "#10b981";
         }
-        
-        setTimeout(() => {
-          const userRole = data.role || 'student';
-          location.href = userRole === 'faculty' ? 'teacher/dashboard.html' : 'student/dashboard.html';
-        }, 700);
-      } catch (err) { console.error("Connection failed"); }
-    });
-  }
+    };
 
-  if (registerForm) {
-    registerForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const name = document.getElementById('name').value.trim();
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-      const role = document.getElementById('role').value;
+    if (registerForm) {
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const role = document.getElementById('role').value;
 
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/auth/register`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, password, role })
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password, role })
+                });
+
+                const data = await res.json();
+                if (!res.ok) return showMsg('registerMsg', data.message || 'Registration failed');
+
+                showMsg('registerMsg', 'Account created! Redirecting...', false);
+                setTimeout(() => { window.location.href = 'signin.html'; }, 2000);
+            } catch (err) {
+                showMsg('registerMsg', 'Connection error. Is the backend running?');
+            }
         });
+    }
 
-        if (!res.ok) return;
-        location.href = 'signin.html';
-      } catch (err) { console.error("Registration failed"); }
-    });
-  }
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: email, password })
+                });
+
+                const data = await res.json();
+                if (!res.ok) return showMsg('loginMsg', data.message || 'Login failed');
+
+                localStorage.setItem('role', data.role);
+                window.location.href = data.role === 'teacher' ? 'teacher/dashboard.html' : 'student/dashboard.html';
+            } catch (err) {
+                showMsg('loginMsg', 'Server unreachable.');
+            }
+        });
+    }
 });
