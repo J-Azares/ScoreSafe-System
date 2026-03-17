@@ -421,8 +421,6 @@ nav.active a{
     padding: 16px 8px;
   }
 }
-}
-
 .search-container input {
   flex: 1 1 auto;
   padding-left: 16px;
@@ -643,7 +641,7 @@ label{
 .btn-primary .fas {
   color: #fff !important;
 }
-}
+
 .btn-primary:hover{
   background: linear-gradient(90deg, var(--accent-color), #b3001a);
   transform: translateY(-2px);
@@ -855,13 +853,50 @@ button.btn.outline:hover {
 /* ========================
    Profile Card
 ======================== */
-.profile-card { display:flex; gap:28px; align-items:flex-start; flex-wrap:wrap; }
-.profile-avatar { flex: 0 0 220px; text-align:center; }
-.avatar-wrapper { width:200px; height:200px; margin:auto; border-radius:14px; overflow:hidden; background:#f3f4f6; display:flex; align-items:center; justify-content:center; position:relative; border:4px solid var(--primary-color); box-shadow: 0 6px 18px rgba(128,0,0,0.12); }
-.avatar-wrapper img{ width:100%; height:100%; object-fit:cover; display:block; }
-.avatar-overlay { position:absolute; right:8px; bottom:8px; background: rgba(0,0,0,0.5); color:#fff; padding:8px 10px; border-radius:999px; cursor:pointer; display:flex; align-items:center; gap:8px; font-size:14px; }
-.avatar-overlay .fas{ font-size:14px; }
-.profile-info { flex:1; min-width:320px; }
+.profile-card {
+    display: flex;
+    flex-direction: row;
+    gap: 40px;
+    align-items: flex-start;
+    flex-wrap: nowrap;
+}
+
+.profile-avatar {
+    flex: 0 0 200px;
+    text-align: center;
+}
+
+.profile-info {
+    flex: 1;
+}
+
+@media (max-width: 768px) {
+    .profile-card {
+        flex-direction: column;
+        align-items: center;
+    }
+    .profile-info {
+        width: 100%;
+    }
+}
+.avatar-wrapper {
+    width: 200px;
+    height: 200px;
+    border-radius: 12px;
+    border: 4px solid var(--primary-color);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f3f4f6;
+}
+
+.avatar-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; 
+    display: block;
+}
 .profile-actions { display:flex; gap:12px; margin-top:8px; }
 .profile-msg { margin-top:12px; font-weight:700; display:none; }
 .profile-msg.success { color: #0f766e; display:block; }
@@ -973,6 +1008,92 @@ select:-webkit-autofill:focus {
   background-color: transparent !important;
 }
 
+
+.role-selection-grid {
+    display: flex;
+    gap: 16px;
+    margin: 24px 0;
+}
+
+.role-card {
+    flex: 1;
+    padding: 24px 16px;
+    background: #fff;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: var(--transition);
+    text-align: center;
+}
+
+.role-card:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(128, 0, 0, 0.1);
+}
+
+.role-card.selected {
+    border-color: var(--primary-color);
+    background-color: rgba(128, 0, 0, 0.05);
+    box-shadow: inset 0 0 0 1px var(--primary-color);
+}
+
+.role-icon {
+    font-size: 32px;
+    color: var(--primary-color);
+    margin-bottom: 12px;
+}
+
+.role-card h3 {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.domain-notice {
+    font-size: 13px;
+    color: #64748b;
+    text-align: center;
+    background: #f1f5f9;
+    padding: 8px;
+    border-radius: 6px;
+}
+
+.role-card:hover .role-icon {
+    color: var(--accent-color);
+    transform: scale(1.1);
+    transition: transform 0.2s ease;
+}
+
+.loader-container {
+    text-align: center;
+    padding: 20px;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(128, 0, 0, 0.1);
+    border-left-color: #800000; /* Your Maroon color */
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 10px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loader-container p {
+    font-size: 14px;
+    color: #64748b;
+    font-weight: 500;
+}
+
+#googleBtnWrapper, .g_id_signin {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
 /* ========================
    Modal (Sign out confirmation)
 ======================== */
@@ -985,6 +1106,7 @@ select:-webkit-autofill:focus {
   justify-content:center;
   z-index:2000;
   margin-left: 48px;
+}
 .modal{
   width:100%;
   max-width:460px;

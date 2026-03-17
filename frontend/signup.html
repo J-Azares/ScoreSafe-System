@@ -1,62 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>ScoreSafe | Sign up</title>
-  <link rel="stylesheet" href="css/main.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin-allow-popups">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>ScoreSafe | Join</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-  <main class="container">
+<main class="container">
     <div class="auth-container">
-      <div class="auth-card">
-        <div class="auth-header">
-          <div class="logo-large">Sign Up</div>
-          <p>Sign up as a teacher or student to start using ScoreSafe</p>
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="logo-large">ScoreSafe</div>
+                <p>Sign in with your Sorsu account to access the system.</p>
+                <p style="font-size: 0.8rem; margin-top: 5px; color: #888;">Your role (Teacher/Student) is assigned automatically.</p>
+            </div>
+
+            <div id="loader" class="loader-container" style="display: none;">
+                <div class="spinner"></div>
+                <p>Verifying Account...</p>
+            </div>
+
+            <div id="googleBtnWrapper" style="margin-top: 20px; display: flex; justify-content: center;">
+                <div id="g_id_onload"
+                     data-client_id="200805836313-5980hgjr0tgoo8mrs6rsrrisl6lqma2s.apps.googleusercontent.com"
+                     data-callback="handleCredentialResponse"
+                     data-auto_prompt="false">
+                </div>
+                <div class="g_id_signin" data-type="standard" data-width="400" data-theme="outline" data-size="large"></div>
+            </div>
+
+            <div class="form-footer" style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+                <p>Already have an account? <a href="signin.html" style="color: var(--primary-color); font-weight: 600;">Sign in here</a></p>
+            </div>
         </div>
-
-        <form id="registerForm">
-          <div class="form-group">
-            <label for="name"><i class="fas fa-user icon-label"></i> Full name</label>
-            <input type="text" id="name" name="name" required>
-          </div>
-
-          <div class="form-group">
-            <label for="email"><i class="fas fa-envelope icon-label"></i> Email</label>
-            <input type="email" id="email" name="email" required>
-          </div>
-
-          <div class="form-group" style="position:relative">
-            <label for="password"><i class="fas fa-lock icon-label"></i> Password</label>
-            <input type="password" id="password" name="password" required>
-          </div>
-
-          <div class="form-group" style="position:relative">
-            <label for="confirmPassword"><i class="fas fa-lock icon-label"></i> Confirm password</label>
-            <input type="password" id="confirmPassword" name="confirmPassword" required>
-          </div>
-
-          <div class="form-group">
-            <label for="role"><i class="fas fa-user-tag icon-label"></i> Role</label>
-            <select id="role" name="role">
-              <option value="teacher">Teacher</option>
-              <option value="student">Student</option>
-            </select>
-          </div>
-
-          <div style="margin-top:6px;margin-bottom:8px"><span id="registerMsg"></span></div>
-
-          <button type="submit" class="btn-primary"><i class="fas fa-user-plus"></i> Sign Up</button>
-        </form>
-
-        <div class="form-footer">
-          <p>Already have an account? <a href="signin.html">Sign in</a></p>
-        </div>
-      </div>
     </div>
-  </main>
+</main>
 
-  <script src="js/config.js"></script> 
-  <script src="js/auth.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="js/config.js"></script> 
+<script src="js/auth.js"></script>
 </body>
 </html>

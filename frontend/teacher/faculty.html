@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ScoreSafe | Subject Management</title>
+    <title>ScoreSafe | Manage Faculty</title>
     <script src="../js/guard.js"></script>
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -16,9 +16,9 @@
             <nav>
                 <a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
                 <a href="student.html"><i class="fas fa-user-graduate"></i> Student</a>
-                <a class="active" href="subject.html"><i class="fas fa-book"></i> Subject</a>
+                <a href="subject.html"><i class="fas fa-book"></i> Subject</a>
                 <a href="record-score.html"><i class="fas fa-plus-circle"></i> Record</a>
-                <a href="faculty.html"><i class="fas fa-user-shield"></i> Faculty</a>
+                <a class="active" href="faculty.html"><i class="fas fa-user-shield"></i> Faculty</a>
                 <a href="profile.html"><i class="fas fa-user"></i> Profile</a>
                 <a href="#" class="mobile-only logout-btn"><i class="fas fa-sign-out-alt"></i> Sign out</a>
             </nav>
@@ -33,47 +33,45 @@
     <main class="container">
         <section class="card">
             <div class="auth-header" style="text-align: left; margin-bottom: 20px;">
-                <h3><i class="fas fa-folder-plus icon-label"></i> Add New Subject</h3>
-                <p style="color: #666; font-size: 0.9rem;">Create a new subject category for records.</p>
+                <h3><i class="fas fa-user-check icon-label"></i> Authorize Teacher</h3>
+                <p style="color: #666; font-size: 0.9rem;">Grant system access to other faculty members via their school email.</p>
             </div>
-            <form id="addSubjectForm">
+            <form id="addTeacherForm">
                 <div class="form-group">
-                    <label for="subjectName"><i class="fas fa-book icon-label"></i> Subject Name</label>
-                    <input type="text" id="subjectName" placeholder="e.g. Mathematics 101" required>
+                    <label for="newTeacherEmail">Teacher's Email (@sorsu.edu.ph)</label>
+                    <input type="email" id="newTeacherEmail" placeholder="colleague@sorsu.edu.ph" required>
                 </div>
-                <button type="submit" class="btn"><i class="fas fa-plus"></i> Add Subject</button>
+                <div class="form-group">
+                    <label for="campusSelect">Assigned Campus</label>
+                    <select id="campusSelect" required>
+                        <option value="Bulan">Bulan Campus</option>
+                        <option value="Sorsogon">Sorsogon City Campus</option>
+                        <option value="Castilla">Castilla Campus</option>
+                        <option value="Gubat">Gubat Campus</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn"><i class="fas fa-shield-alt"></i> Authorize Faculty</button>
             </form>
         </section>
 
         <section class="card table-section" style="margin-top: 20px;">
-            <div class="table-header">
-                <h3>Current Subjects</h3>
-                <div class="search-container">
-                    <input type="text" id="searchInput" class="table-search" placeholder="Search subjects...">
-                    <button type="button" class="search-btn"><i class="fas fa-search"></i></button>
-                </div>
-            </div>
+            <h3>Authorized Faculty Members</h3>
             <div class="table-wrapper">
-                <table id="subjectsTable">
+                <table id="facultyTable">
                     <thead>
                         <tr>
-                            <th>Subject Name</th>
-                            <th>Action</th>
+                            <th>Email Address</th>
+                            <th>Campus</th>
+                            <th>Role</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr class="empty-row"><td colspan="2">Loading subjects...</td></tr>
+                        <tr class="empty-row"><td colspan="3">Loading faculty...</td></tr>
                     </tbody>
                 </table>
             </div>
         </section>
     </main>
-
-    <footer class="site-footer">
-        <div class="container footer-container">
-            <p>&copy; 2026 ScoreSafe. All rights reserved.</p>
-        </div>
-    </footer>
 
     <script src="../js/config.js"></script>
     <script src="../js/teacher.js"></script>

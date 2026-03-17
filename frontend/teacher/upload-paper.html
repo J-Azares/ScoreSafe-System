@@ -1,90 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
-    <nav>
-      <a href="dashboard.html"><i class="fas fa-tachometer-alt icon-label"></i> Dashboard</a>
-      <a href="student.html"><i class="fas fa-user-graduate icon-label"></i> Student</a>
-      <a href="subject.html"><i class="fas fa-book icon-label"></i> Subject</a>
-      <a href="record-score.html"><i class="fas fa-plus-circle icon-label"></i> Record</a>
-      <a href="profile.html"><i class="fas fa-user icon-label"></i> Profile</a>
-      <a class="active" href="upload-paper.html"><i class="fas fa-file-upload icon-label"></i> Upload Paper</a>
-      <a href="#" class="mobile-only logout-btn"><i class="fas fa-sign-out-alt icon-label"></i> Sign out</a>
-    </nav>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ScoreSafe | Upload Paper</title>
+    <script src="../js/guard.js"></script>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
 <header class="topbar">
   <div class="container nav-wrapper">
     <div class="logo">ScoreSafe</div>
     <div class="hamburger" id="hamburger">&#9776;</div>
     <nav>
-      <a href="dashboard.html"><i class="fas fa-tachometer-alt icon-label"></i> Dashboard</a>
-      <a href="student.html"><i class="fas fa-user-graduate icon-label"></i> Student</a>
-      <a href="subject.html"><i class="fas fa-book icon-label"></i> Subject</a>
-      <a href="record-score.html"><i class="fas fa-plus-circle icon-label"></i> Record Score</a>
-      <a href="profile.html"><i class="fas fa-user icon-label"></i> Profile</a>
-      <a class="active" href="upload-paper.html"><i class="fas fa-upload icon-label"></i> Upload Paper</a>
-      <a href="#" class="mobile-only logout-btn"><i class="fas fa-sign-out-alt icon-label"></i> Sign out</a>
+      <a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+      <a href="student.html"><i class="fas fa-user-graduate"></i> Student</a>
+      <a href="subject.html"><i class="fas fa-book"></i> Subject</a>
+      <a href="record-score.html"><i class="fas fa-plus-circle"></i> Record</a>
+      <a href="faculty.html"><i class="fas fa-user-shield"></i> Faculty</a>
+      <a class="active" href="upload-paper.html"><i class="fas fa-upload"></i> Upload Paper</a>
+      <a href="#" class="mobile-only logout-btn"><i class="fas fa-sign-out-alt"></i> Sign out</a>
     </nav>
     <div class="header-actions">
-      <a href="#" class="btn outline logout-btn"><i class="fas fa-sign-out-alt icon-label"></i> <span class="logout-label">Sign out</span></a>
+      <a href="#" class="btn outline logout-btn"><i class="fas fa-sign-out-alt"></i> <span class="logout-label">Sign out</span></a>
     </div>
   </div>
 </header>
 
 <main class="container">
-
   <section class="card">
-    <form id="uploadPaperForm" enctype="multipart/form-data">
-      <div class="form-group">
-        <label for="studentSelectUpload">Student Email</label>
-        <select id="studentSelectUpload" required>
-          <option value="">-- Select Student --</option>
-        </select>
+    <div class="auth-header" style="text-align: left; margin-bottom: 20px;">
+        <h3><i class="fas fa-cloud-upload-alt icon-label"></i> Upload Digital Evidence</h3>
+        <p style="color: #666; font-size: 0.9rem;">Attach physical paper images to existing student records.</p>
+    </div>
+
+    <form id="uploadPaperForm">
+      <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <div class="form-group">
+            <label for="studentSelectUpload">Select Student</label>
+            <select id="studentSelectUpload" required>
+              <option value="">-- Select Student --</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="subjectSelectUpload">Subject</label>
+            <select id="subjectSelectUpload" required>
+              <option value="">-- Select Subject --</option>
+            </select>
+          </div>
       </div>
 
-      <div class="form-group">
-        <label for="subjectSelectUpload">Subject</label>
-        <select id="subjectSelectUpload" required>
-          <option value="">-- Select Subject --</option>
-        </select>
-      </div>
-
-      <div class="form-group">
+      <div class="form-group" style="margin-top: 15px;">
         <label for="categorySelectUpload">Category</label>
         <select id="categorySelectUpload" required>
           <option value="">-- Select Category --</option>
-          <option value="Performance">Performance</option>
-          <option value="Activity">Activity</option>
           <option value="Quiz">Quiz</option>
-          <option value="Recitation">Recitation</option>
+          <option value="Activity">Activity</option>
+          <option value="Performance">Performance</option>
           <option value="Examination">Examination</option>
         </select>
       </div>
 
-      <div class="form-group">
-        <label for="paperFile">Upload Paper</label>
-        <input type="file" id="paperFile" accept=".jpg,.jpeg,.png,.gif,.doc,.docx,.pdf,.ppt,.pptx">
+      <div class="form-group" style="margin-top: 15px;">
+        <label for="paperFile">Choose File (Image or PDF)</label>
+        <input type="file" id="paperFile" accept="image/*,application/pdf" required>
       </div>
 
-      <button type="submit" class="btn"><i class="fas fa-cloud-upload-alt icon-label"></i> Upload Paper</button>
+      <button type="submit" class="btn" style="margin-top: 10px;"><i class="fas fa-upload"></i> Complete Upload</button>
     </form>
-    <p id="uploadMsg"></p>
   </section>
 
-  <section class="card table-section">
+  <section class="card table-section" style="margin-top: 20px;">
+    <h3>Recent Evidence Backups</h3>
     <div class="table-wrapper">
       <table id="scoresTable">
         <thead>
           <tr>
-            <th>Student Email</th>
+            <th>Student</th>
             <th>Subject</th>
-            <th>Total Score</th>
-            <th>Total Item</th>
-            <th>Paper</th>
+            <th>Score</th>
+            <th>Evidence</th>
             <th>Category</th>
-            <th>Date</th>
-            <th>Action</th>
+            <th>Date Uploaded</th>
           </tr>
         </thead>
         <tbody>
-          <tr class="empty-row"><td colspan="8">No records yet</td></tr>
+          <tr class="empty-row"><td colspan="6">Loading history...</td></tr>
         </tbody>
       </table>
     </div>
@@ -92,11 +96,12 @@
 </main>
 
 <footer class="site-footer">
-  <div class="container footer-container">
-    <p>&copy; 2026 ScoreSafe. All rights reserved.</p>
-  </div>
+    <div class="container footer-container">
+        <p>&copy; 2026 ScoreSafe. All rights reserved.</p>
+    </div>
 </footer>
 
+<script src="../js/config.js"></script>
 <script src="../js/teacher.js"></script>
 </body>
 </html>

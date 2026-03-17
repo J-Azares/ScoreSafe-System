@@ -1,118 +1,117 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ScoreSafe | Record Score</title>
-<link rel="stylesheet" href="../css/main.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScoreSafe | Record Score</title>
+    <script src="../js/guard.js"></script>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
+    <header class="topbar">
+        <div class="container nav-wrapper">
+            <div class="logo">ScoreSafe</div>
+            <div class="hamburger" id="hamburger">&#9776;</div>
+            <nav>
+                <a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                <a href="student.html"><i class="fas fa-user-graduate"></i> Student</a>
+                <a href="subject.html"><i class="fas fa-book"></i> Subject</a>
+                <a class="active" href="record-score.html"><i class="fas fa-plus-circle"></i> Record</a>
+                <a href="faculty.html"><i class="fas fa-user-shield"></i> Faculty</a>
+                <a href="profile.html"><i class="fas fa-user"></i> Profile</a>
+                <a href="#" class="mobile-only logout-btn"><i class="fas fa-sign-out-alt"></i> Sign out</a>
+            </nav>
+            <div class="header-actions">
+                <a href="#" class="btn outline logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> <span class="logout-label">Sign out</span>
+                </a>
+            </div>
+        </div>
+    </header>
 
-<header class="topbar">
-  <div class="container nav-wrapper">
-    <div class="logo">ScoreSafe</div>
-    <div class="hamburger" id="hamburger">&#9776;</div>
-    <nav>
-      <a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
-      <a href="student.html"><i class="fas fa-user-graduate"></i> Student</a>
-      <a href="subject.html"><i class="fas fa-book"></i> Subject</a>
-      <a class="active" href="record-score.html"><i class="fas fa-plus-circle"></i> Record</a>
-      <a href="profile.html"><i class="fas fa-user"></i> Profile</a>
-      <a href="#" class="mobile-only logout-btn"><i class="fas fa-sign-out-alt"></i> Sign out</a>
-    </nav>
-    </nav>
-    <div class="header-actions">
-      <a href="#" class="btn outline logout-btn"><i class="fas fa-sign-out-alt"></i> <span class="logout-label">Sign out</span></a>
-    </div>
-  </div>
-</header>
+    <main class="container">
+        <section class="card">
+            <div class="auth-header" style="text-align: left; margin-bottom: 20px;">
+                <h3><i class="fas fa-pen-nib icon-label"></i> Record New Score</h3>
+            </div>
+            <form id="recordScoreForm">
+                <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="form-group">
+                        <label for="studentSelect">Student</label>
+                        <select id="studentSelect" required>
+                            <option value="">-- Select Student --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="subjectSelect">Subject</label>
+                        <select id="subjectSelect" required>
+                            <option value="">-- Select Subject --</option>
+                        </select>
+                    </div>
+                </div>
 
-<main class="container">
+                <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 15px;">
+                    <div class="form-group">
+                        <label for="categorySelect">Category</label>
+                        <select id="categorySelect" required>
+                            <option value="">-- Category --</option>
+                            <option value="Quiz">Quiz</option>
+                            <option value="Activity">Activity</option>
+                            <option value="Performance">Performance</option>
+                            <option value="Examination">Examination</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="totalItemsInput">Total Items</label>
+                        <input type="number" id="totalItemsInput" placeholder="Max Score" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="score">Student Score</label>
+                        <input type="number" id="score" placeholder="Earned" required>
+                    </div>
+                </div>
 
-  <section class="card">
-    <form id="recordScoreForm">
-      <div class="form-group">
-        <label for="studentSelect"><i class="fas fa-user-graduate icon-label"></i> Student</label>
-        <select id="studentSelect" required>
-          <option value="">-- Select Student --</option>
-        </select>
-      </div>
+                <div class="form-group" style="margin-top: 15px;">
+                    <label for="paperFile">Evidence / Paper Image</label>
+                    <input type="file" id="paperFile" accept="image/*">
+                </div>
 
-      <div class="form-group">
-        <label for="subjectSelect"><i class="fas fa-book icon-label"></i> Subject</label>
-        <select id="subjectSelect" required>
-          <option value="">-- Select Subject --</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="categorySelect"><i class="fas fa-layer-group icon-label"></i> Category</label>
-        <select id="categorySelect" required>
-          <option value="">-- Select Category --</option>
-          <option value="Performance">Performance</option>
-          <option value="Activity">Activity</option>
-          <option value="Quiz">Quiz</option>
-          <option value="Recitation">Recitation</option>
-          <option value="Examination">Examination</option>
-        </select>
-      </div>
+                <button type="submit" class="btn" style="margin-top: 10px;"><i class="fas fa-save"></i> Save Record</button>
+            </form>
+        </section>
 
-      <div class="form-group">
-        <label for="totalItemsInput"><i class="fas fa-list-ol icon-label"></i> Total Item</label>
-        <input type="number" id="totalItemsInput" min="0">
-      </div>
+        <section class="card table-section" style="margin-top: 20px;">
+            <div class="table-header">
+                <h3>Recorded Scores</h3>
+                <div class="search-container">
+                    <input type="text" id="searchInput" class="table-search" placeholder="Filter records...">
+                    <button type="button" class="search-btn"><i class="fas fa-search"></i></button>
+                </div>
+            </div>
+            <div class="table-wrapper">
+                <table id="scoresTable">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Subject</th>
+                            <th>Score</th>
+                            <th>Total</th>
+                            <th>Paper</th>
+                            <th>Category</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="empty-row"><td colspan="8">Loading records...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
 
-      <div class="form-group">
-        <label for="score"><i class="fas fa-star icon-label"></i> Total Score</label>
-        <input type="number" id="score" min="0" max="100" required>
-      </div>
-
-      <div class="form-group">
-        <label for="paperFile"><i class="fas fa-file-upload icon-label"></i> Upload Paper</label>
-        <input type="file" id="paperFile" accept=".jpg,.jpeg,.png,.gif,.doc,.docx,.pdf,.ppt,.pptx">
-      </div>
-
-      <button type="submit" class="btn"><i class="fas fa-save"></i> Record Score</button>
-    </form>
-    <p id="msg"></p>
-  </section>
-
-  <section class="card table-section">
-    <div class="table-header">
-      <h3>Recorded Scores</h3>
-      <div class="search-container">
-           <input type="text" id="searchInput" class="table-search" data-table="#scoresTable" type="text">
-           <button type="button" class="search-btn" aria-label="Search"><i class="fas fa-search search-icon"></i></button>
-      </div>
-    </div>
-    <div class="table-wrapper">
-      <table id="scoresTable">
-        <thead>
-          <tr>
-            <th>Student</th>
-            <th>Subject</th>
-            <th>Total Score</th>
-            <th>Total Item</th>
-            <th>Paper</th>
-            <th>Category</th>
-            <th>Date</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr class="empty-row"><td colspan="8">No records yet</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
-</main>
-
-<footer class="site-footer">
-  <div class="container footer-container">
-    <p>&copy; 2026 ScoreSafe. All rights reserved.</p>
-  </div>
-</footer>
-
-<script src="../js/teacher.js"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/teacher.js"></script>
 </body>
 </html>
