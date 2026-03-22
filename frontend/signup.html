@@ -2,45 +2,98 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin-allow-popups">
-    <meta name="referrer" content="strict-origin-when-cross-origin">
-    <title>ScoreSafe | Join</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScoreSafe | Create Account</title>
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
+<script type="module">
+    const API_BASE_URL = 'http://127.0.0.1:3000';
+
+window.onload = async () => {
+    const email = sessionStorage.getItem('pendingEmail');
+    if (!email) {
+        window.location.href = 'signin.html';
+        return;
+    }
+
+    const res = await fetch(`${API_BASE_URL}/api/auth/check-user?email=${email}`);
+    const data = await res.json();
+    if (data.exists) {
+        alert("You already have an account. Please sign in.");
+        window.location.href = 'signin.html';
+        return;
+    }
+
+    document.getElementById('displayEmail').value = email;
+};
+
+    document.getElementById('registrationForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const password = document.getElementById('newPassword').value;
+        const confirm = document.getElementById('confirmPassword').value;
+        const token = sessionStorage.getItem('pendingToken');
+
+        if (password !== confirm) return alert("Passwords do not match!");
+        if (password.length < 6) return alert("Password must be at least 6 characters.");
+
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/auth/register-sorsu`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token, password })
+            });
+
+            const data = await res.json();
+            
+            if (res.ok) {
+                localStorage.setItem('role', data.user.role);
+                localStorage.setItem('username', data.user.username);
+                localStorage.setItem('fullName', data.user.full_name);
+                localStorage.setItem('profilePic', data.user.profile_photo);
+
+                sessionStorage.clear(); 
+                alert("Account Created! Welcome to ScoreSafe.");
+                window.location.href = data.user.role === 'teacher' ? 'teacher/dashboard.html' : 'student/dashboard.html';
+            } else {
+                alert(data.error);
+            }
+        } catch (err) {
+            alert("Server connection failed.");
+        }
+    });
+</script>
+
 <main class="container">
-    <div class="auth-container">
+    <div class="auth-container signup">
         <div class="auth-card">
             <div class="auth-header">
                 <div class="logo-large">ScoreSafe</div>
-                <p>Sign in with your Sorsu account to access the system.</p>
-                <p style="font-size: 0.8rem; margin-top: 5px; color: #888;">Your role (Teacher/Student) is assigned automatically.</p>
+                <p>Finish setting up your account</p>
             </div>
 
-            <div id="loader" class="loader-container" style="display: none;">
-                <div class="spinner"></div>
-                <p>Verifying Account...</p>
-            </div>
-
-            <div id="googleBtnWrapper" style="margin-top: 20px; display: flex; justify-content: center;">
-                <div id="g_id_onload"
-                     data-client_id="200805836313-5980hgjr0tgoo8mrs6rsrrisl6lqma2s.apps.googleusercontent.com"
-                     data-callback="handleCredentialResponse"
-                     data-auto_prompt="false">
+            <form id="registrationForm">
+                <div class="form-group">
+                    <label>Verified Sorsu Email</label>
+                    <input type="text" id="displayEmail" readonly style="background: #f9f9f9; color: #666;">
                 </div>
-                <div class="g_id_signin" data-type="standard" data-width="400" data-theme="outline" data-size="large"></div>
-            </div>
+                <div class="form-group">
+                    <label for="newPassword"><i class="fas fa-lock icon-label"></i> Set ScoreSafe Password</label>
+                    <input type="password" id="newPassword" required placeholder="Must be at least 6 characters">
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword"><i class="fas fa-check-circle icon-label"></i> Confirm Password</label>
+                    <input type="password" id="confirmPassword" required placeholder="Re-enter your password">
+                </div>
+                <button type="submit" class="btn-primary">Complete Registration</button>
+            </form>
 
-            <div class="form-footer" style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
-                <p>Already have an account? <a href="signin.html" style="color: var(--primary-color); font-weight: 600;">Sign in here</a></p>
+            <div class="form-footer" style="margin-top: 25px;">
+                <p>Wrong account? <a href="signin.html" >Go back</a></p>
             </div>
         </div>
     </div>
 </main>
-
-<script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="js/config.js"></script> 
-<script src="js/auth.js"></script>
 </body>
 </html>

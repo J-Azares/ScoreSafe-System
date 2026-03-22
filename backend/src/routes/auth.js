@@ -1,15 +1,21 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
-const multer = require('multer');
+const admin = require("firebase-admin");
 const path = require('path');
-const { OAuth2Client } = require('google-auth-library');
+const multer = require('multer');
 
-const client = new OAuth2Client('200805836313-5980hgjr0tgoo8mrs6rsrrisl6lqma2s.apps.googleusercontent.com');
+const serviceAccount = require(path.join(__dirname, '../firebase-admin.json'));
+
+if (!admin.apps.length) {
+    admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount)
+    });
+}
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, path.join(__dirname, '../../uploads')); 
+        cb(null, path.join(__dirname, '../uploads'));
     },
     filename: (req, file, cb) => {
         cb(null, 'avatar-' + Date.now() + path.extname(file.originalname));
@@ -19,6 +25,44 @@ const storage = multer.diskStorage({
 const upload = multer({ 
     storage: storage,
     limits: { fileSize: 5 * 1024 * 1024 }
+});
+
+router.post('/register-sorsu', async (req, res) => {
+    const { token, password } = req.body;
+    try {
+        const decodedToken = await admin.auth().verifyIdToken(token);
+        const { email, name, picture, uid } = decodedToken;
+
+        const [existing] = await db.execute("SELECT id FROM users WHERE username = ?", [email]);
+        if (existing.length > 0) {
+            return res.status(400).json({ error: "Account already exists. Please go back and sign in." });
+        }
+
+        if (!email.endsWith('@sorsu.edu.ph')) {
+            await admin.auth().deleteUser(uid); 
+            return res.status(403).json({ error: "Access Denied. Sorsu emails only." });
+        }
+
+        await admin.auth().updateUser(uid, { password: password });
+
+        const [whitelist] = await db.execute("SELECT * FROM teacher_whitelist WHERE email = ?", [email]);
+        const assignedRole = whitelist.length > 0 ? 'teacher' : 'student';
+
+        const [result] = await db.execute(
+            "INSERT INTO users (full_name, username, password, role, profile_photo, is_verified) VALUES (?, ?, 'firebase_auth', ?, ?, 1)",
+            [name, email, assignedRole, picture]
+        );
+
+        const [newUser] = await db.execute("SELECT * FROM users WHERE id = ?", [result.insertId]);
+
+        res.json({ 
+            message: "Account registered successfully!", 
+            user: newUser[0] 
+        });
+    } catch (error) {
+        console.error("Registration Error:", error);
+        res.status(400).json({ error: error.message });
+    }
 });
 
 router.post('/profile/upload-photo', upload.single('profile_photo'), async (req, res) => {
@@ -74,40 +118,41 @@ router.delete('/user/:id', async (req, res) => {
 router.post('/google-login', async (req, res) => {
     const { token } = req.body; 
     try {
-        const ticket = await client.verifyIdToken({
-            idToken: token,
-            audience: '200805836313-5980hgjr0tgoo8mrs6rsrrisl6lqma2s.apps.googleusercontent.com',
-        });
-        const payload = ticket.getPayload();
-        const { email, name, picture } = payload;
-
-        if (!email.endsWith('@sorsu.edu.ph')) {
-            return res.status(403).json({ error: "Access Denied. Use @sorsu.edu.ph only." });
-        }
-
-        const [whitelist] = await db.execute("SELECT * FROM teacher_whitelist WHERE email = ?", [email]);
-        const assignedRole = whitelist.length > 0 ? 'teacher' : 'student';
+        const decodedToken = await admin.auth().verifyIdToken(token);
+        const { email } = decodedToken;
 
         let [users] = await db.execute("SELECT * FROM users WHERE username = ?", [email]);
-        let user;
-
+        
         if (users.length === 0) {
-            const [result] = await db.execute(
-                "INSERT INTO users (full_name, username, password, role, profile_photo, is_verified) VALUES (?, ?, 'sso_verified', ?, ?, 1)",
-                [name, email, assignedRole, picture]
-            );
-            const [newUser] = await db.execute("SELECT * FROM users WHERE id = ?", [result.insertId]);
-            user = newUser[0];
-        } else {
-            user = users[0];
-            await db.execute("UPDATE users SET role = ?, profile_photo = ? WHERE username = ?", [assignedRole, picture, email]);
-            user.role = assignedRole;
+            return res.status(404).json({ error: "User not registered in ScoreSafe." });
         }
 
-        res.json({ message: "Authenticated successfully!", user });
+        let user = users[0];
 
+        const [whitelist] = await db.execute("SELECT * FROM teacher_whitelist WHERE email = ?", [email]);
+        const currentRole = whitelist.length > 0 ? 'teacher' : 'student';
+
+        if (user.role !== currentRole) {
+            await db.execute("UPDATE users SET role = ? WHERE username = ?", [currentRole, email]);
+            user.role = currentRole;
+        }
+
+        res.json({ message: "Authenticated!", user });
     } catch (error) {
-        res.status(401).json({ error: "Authentication failed." });
+        res.status(401).json({ error: "Invalid Credentials" });
+    }
+});
+
+router.get('/check-user', async (req, res) => {
+    const { email } = req.query;
+    try {
+        const [users] = await db.execute("SELECT id FROM users WHERE username = ?", [email]);
+        if (users.length > 0) {
+            return res.json({ exists: true });
+        }
+        res.json({ exists: false });
+    } catch (err) {
+        res.status(500).json({ error: "Database check failed" });
     }
 });
 

@@ -3,71 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin-allow-popups">
-    <meta name="referrer" content="strict-origin-when-cross-origin">
     <title>ScoreSafe | Sign in</title>
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body>
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+<body>  
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+  import { 
+    getAuth, 
+    GoogleAuthProvider, 
+    signInWithPopup, 
+    signInWithEmailAndPassword 
+  } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
+  
+  const firebaseConfig = {
+    apiKey: "AIzaSyBeoV8zLt1wPO_GW_K3hHjhwGuWFRmdshw",
+    authDomain: "scoresafe-backend.firebaseapp.com",
+    projectId: "scoresafe-backend",
+    storageBucket: "scoresafe-backend.firebasestorage.app",
+    messagingSenderId: "813508838073",
+    appId: "1:813508838073:web:9a50b5c93d8a2239179168",
+    measurementId: "G-JJEYYTE8GL"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  window.auth = auth; 
+  const provider = new GoogleAuthProvider();
+  const API_BASE_URL = 'http://127.0.0.1:3000';
+
+window.loginWithGoogle = async () => {
+    try {
+        const result = await signInWithPopup(auth, provider);
+        const idToken = await result.user.getIdToken();
+        const email = result.user.email;
+
+        if (!email.endsWith('@sorsu.edu.ph')) {
+            alert("Only @sorsu.edu.ph accounts are allowed.");
+            await auth.signOut();
+            return;
+        }
+
+        const checkRes = await fetch(`${API_BASE_URL}/api/auth/check-user?email=${email}`);
+        const checkData = await checkRes.json();
+
+        if (checkData.exists) {
+            const res = await fetch(`${API_BASE_URL}/api/auth/google-login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: idToken })
+            });
+            const data = await res.json();
+            if (res.ok) handleCredentialResponse({ credential: idToken });
+        } else {
+            sessionStorage.setItem('pendingEmail', email);
+            sessionStorage.setItem('pendingToken', idToken);
+            alert("Account not found. Redirecting to set your ScoreSafe password...");
+            window.location.href = 'signup.html';
+        }
+    } catch (error) {
+        console.error("SSO Error:", error);
+    }
+};
+
+  window.createAccount = async () => {
+    try {
+        const result = await signInWithPopup(auth, provider);
+        const idToken = await result.user.getIdToken();
+        
+        const scoresafePassword = prompt("Verify Success! Now set a password for your ScoreSafe system login:");
+        
+        if (!scoresafePassword || scoresafePassword.length < 6) {
+            alert("Account creation cancelled. Password must be at least 6 characters.");
+            await auth.signOut();
+            return;
+        }
+
+        const res = await fetch(`${API_BASE_URL}/api/auth/register-sorsu`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                token: idToken, 
+                password: scoresafePassword 
+            })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+            alert(data.message + " You can now sign in.");
+            location.reload(); 
+        } else {
+            alert(data.error);
+        }
+    } catch (error) {
+        alert("Creation failed: " + error.message);
+    }
+  };
+
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    document.getElementById('loader').style.display = 'block';
+    document.getElementById('loginForm').style.display = 'none';
+
+    try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const idToken = await userCredential.user.getIdToken();
+        handleCredentialResponse({ credential: idToken });
+    } catch (error) {
+        document.getElementById('loader').style.display = 'none';
+        document.getElementById('loginForm').style.display = 'block';
+        alert("Login Failed: Please check your password or create an account.");
+    }
+  });
+</script>
 
     <main class="container">
         <div class="auth-container signin">
             <div class="auth-card">
                 <div class="auth-header">
                     <div class="logo-large">ScoreSafe</div>
-                    <p>Welcome back — sign in to continue to your dashboard</p>
+                    <p>Welcome back — sign in to continue</p>
                 </div>
+
                 <div id="loader" class="loader-container" style="display: none;">
-    <div class="spinner"></div>
-    <p>Signing in...</p>
-</div>
+                    <div class="spinner"></div>
+                    <p>Signing in...</p>
+                </div>
+
+                <button type="button" class="btn-primary outline" onclick="loginWithGoogle()" style="margin-top: 10px; background: white; color: #800000; border: 1px solid #ddd;">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" style="margin-right: 10px; vertical-align: middle;">
+                    Sign in with Sorsu Email
+                </button>
+
+                <div style="text-align: center; margin: 20px 0; color: #888; font-size: 0.85rem; position: relative;">
+                    <span style="background: #fff; padding: 0 15px; position: relative; z-index: 1;">OR</span>
+                    <hr style="position: absolute; top: 50%; width: 100%; border: 0; border-top: 1px solid #eee; margin: 0;">
+                </div>
 
                 <form id="loginForm">
                     <div class="form-group">
                         <label for="email"><i class="fas fa-envelope icon-label"></i> Email</label>
-                        <input type="email" id="email" name="email" required placeholder="Enter your email">
+                        <input type="email" id="email" required placeholder="Enter your Sorsu email">
                     </div>
-
-                    <div class="form-group" style="position:relative">
+                    <div class="form-group">
                         <label for="password"><i class="fas fa-lock icon-label"></i> Password</label>
-                        <input type="password" id="password" name="password" required placeholder="Enter your password">
+                        <input type="password" id="password" required placeholder="Enter ScoreSafe password">
                     </div>
-
-                    <div style="margin-top:6px;margin-bottom:8px">
-                        <span id="loginMsg"></span>
+                    <button type="submit" class="btn-primary">Sign In</button>
+                    <div class="form-footer" style="margin-top: 25px;">
+                        <p style="font-size: 0.85rem;">New to ScoreSafe? <a href="#" onclick="loginWithGoogle()" style="color: #800000; font-weight: bold; text-decoration: none;">Create Account</a></p>
                     </div>
-
-                    <button type="submit" class="btn-primary">
-                        <i class="fas fa-sign-in-alt icon-label"></i> Sign In
-                    </button>
                 </form>
 
-                <div style="text-align: center; margin: 20px 0; color: #888; font-size: 0.85rem; position: relative;">
-                    <span style="background: #fff; padding: 0 15px; position: relative; z-index: 1; font-weight: 500;">OR</span>
-                    <hr style="position: absolute; top: 50%; width: 100%; border: 0; border-top: 1px solid #eee; margin: 0;">
-                </div>
-
-                <div id="g_id_onload"
-                     data-client_id="200805836313-5980hgjr0tgoo8mrs6rsrrisl6lqma2s.apps.googleusercontent.com"
-                     data-callback="handleCredentialResponse"
-                     data-auto_prompt="false">
-                </div>
-
-                <div class="g_id_signin"
-                     data-type="standard" 
-                     data-shape="rectangular" 
-                     data-theme="outline" 
-                     data-text="signin_with" 
-                     data-size="large" 
-                     data-logo_alignment="left"
-                     data-width="400">
-                </div>
-
                 <div class="form-footer" style="margin-top: 25px;">
-                    <p>Don't have an account? <a href="signup.html">Sign up</a></p>
+                    <p style="font-size: 0.8rem; color: #888;">Use your university credentials to access ScoreSafe.</p>
                 </div>
             </div>
         </div>
