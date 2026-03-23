@@ -7,13 +7,9 @@ CREATE TABLE IF NOT EXISTS users (
     username VARCHAR(100) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
     role ENUM('teacher', 'student') NOT NULL,
+    bio TEXT,
+    profile_photo VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS students (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    full_name VARCHAR(100) NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS subjects (
@@ -26,9 +22,20 @@ CREATE TABLE IF NOT EXISTS records (
     student_id INT,
     subject_id INT,
     score INT NOT NULL,
+    total_items INT DEFAULT 0,
     category ENUM('Performance', 'Activity', 'Quiz', 'Recitation', 'Examination'),
     paper_image_url VARCHAR(255),
+    is_verified TINYINT(1) DEFAULT 0,
     date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (student_id) REFERENCES students(id),
-    FOREIGN KEY (subject_id) REFERENCES subjects(id)
+    FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS teacher_whitelist (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    campus VARCHAR(100)
+);
+
+INSERT IGNORE INTO subjects (name) VALUES ('Software Engineering'), ('Digital Marketing');
+INSERT IGNORE INTO teacher_whitelist (email, campus) VALUES ('rollin.furio@sorsu.edu.ph', 'Bulan');
