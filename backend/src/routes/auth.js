@@ -28,39 +28,22 @@ const upload = multer({
 });
 
 router.post('/register-sorsu', async (req, res) => {
-    const { token, password } = req.body;
+    const { token, campus } = req.body; 
     try {
         const decodedToken = await admin.auth().verifyIdToken(token);
-        const { email, name, picture, uid } = decodedToken;
-
-        const [existing] = await db.execute("SELECT id FROM users WHERE username = ?", [email]);
-        if (existing.length > 0) {
-            return res.status(400).json({ error: "Account already exists. Please go back and sign in." });
-        }
-
-        if (!email.endsWith('@sorsu.edu.ph')) {
-            await admin.auth().deleteUser(uid); 
-            return res.status(403).json({ error: "Access Denied. Sorsu emails only." });
-        }
-
-        await admin.auth().updateUser(uid, { password: password });
+        const { email, name, picture } = decodedToken;
 
         const [whitelist] = await db.execute("SELECT * FROM teacher_whitelist WHERE email = ?", [email]);
         const assignedRole = whitelist.length > 0 ? 'teacher' : 'student';
 
         const [result] = await db.execute(
-            "INSERT INTO users (full_name, username, password, role, profile_photo, is_verified) VALUES (?, ?, 'firebase_auth', ?, ?, 1)",
-            [name, email, assignedRole, picture]
+            "INSERT INTO users (full_name, username, password, role, campus, profile_photo, is_verified) VALUES (?, ?, 'sso_only', ?, ?, ?, 1)",
+            [name, email, assignedRole, campus, picture]
         );
 
-        const [newUser] = await db.execute("SELECT * FROM users WHERE id = ?", [result.insertId]);
-
-        res.json({ 
-            message: "Account registered successfully!", 
-            user: newUser[0] 
-        });
+        const [newUser] = await db.execute("SELECT id, role, username FROM users WHERE id = ?", [result.insertId]);
+        res.json({ message: "Registration successful!", user: newUser[0] });
     } catch (error) {
-        console.error("Registration Error:", error);
         res.status(400).json({ error: error.message });
     }
 });
@@ -124,20 +107,11 @@ router.post('/google-login', async (req, res) => {
         let [users] = await db.execute("SELECT * FROM users WHERE username = ?", [email]);
         
         if (users.length === 0) {
-            return res.status(404).json({ error: "User not registered in ScoreSafe." });
+            return res.status(404).json({ error: "User not registered." });
         }
 
-        let user = users[0];
-
-        const [whitelist] = await db.execute("SELECT * FROM teacher_whitelist WHERE email = ?", [email]);
-        const currentRole = whitelist.length > 0 ? 'teacher' : 'student';
-
-        if (user.role !== currentRole) {
-            await db.execute("UPDATE users SET role = ? WHERE username = ?", [currentRole, email]);
-            user.role = currentRole;
-        }
-
-        res.json({ message: "Authenticated!", user });
+        const user = users[0];
+        res.json({ message: "Authenticated!", user: { role: user.role, username: user.username } });
     } catch (error) {
         res.status(401).json({ error: "Invalid Credentials" });
     }
