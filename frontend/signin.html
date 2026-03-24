@@ -11,12 +11,7 @@
 <body>  
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
-  import { 
-    getAuth, 
-    GoogleAuthProvider, 
-    signInWithPopup, 
-    signInWithEmailAndPassword 
-  } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
   
   const firebaseConfig = {
     apiKey: "AIzaSyBeoV8zLt1wPO_GW_K3hHjhwGuWFRmdshw",
@@ -30,144 +25,82 @@
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
-  window.auth = auth; 
   const provider = new GoogleAuthProvider();
   const API_BASE_URL = 'http://127.0.0.1:3000';
 
-window.loginWithGoogle = async () => {
+window.loginWithGoogle = async (mode = 'login') => {
     try {
         const result = await signInWithPopup(auth, provider);
         const idToken = await result.user.getIdToken();
         const email = result.user.email;
 
         if (!email.endsWith('@sorsu.edu.ph')) {
-            alert("Only @sorsu.edu.ph accounts are allowed.");
+            alert("Access Denied: Please use your @sorsu.edu.ph email.");
             await auth.signOut();
             return;
         }
 
-        const checkRes = await fetch(`${API_BASE_URL}/api/auth/check-user?email=${email}`);
-        const checkData = await checkRes.json();
-
-        if (checkData.exists) {
-            const res = await fetch(`${API_BASE_URL}/api/auth/google-login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ token: idToken })
-            });
-            const data = await res.json();
-            if (res.ok) handleCredentialResponse({ credential: idToken });
-        } else {
-            sessionStorage.setItem('pendingEmail', email);
-            sessionStorage.setItem('pendingToken', idToken);
-            alert("Account not found. Redirecting to set your ScoreSafe password...");
-            window.location.href = 'signup.html';
-        }
-    } catch (error) {
-        console.error("SSO Error:", error);
-    }
-};
-
-  window.createAccount = async () => {
-    try {
-        const result = await signInWithPopup(auth, provider);
-        const idToken = await result.user.getIdToken();
-        
-        const scoresafePassword = prompt("Verify Success! Now set a password for your ScoreSafe system login:");
-        
-        if (!scoresafePassword || scoresafePassword.length < 6) {
-            alert("Account creation cancelled. Password must be at least 6 characters.");
-            await auth.signOut();
-            return;
-        }
-
-        const res = await fetch(`${API_BASE_URL}/api/auth/register-sorsu`, {
+        const res = await fetch(`${API_BASE_URL}/api/auth/google-login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                token: idToken, 
-                password: scoresafePassword 
-            })
+            body: JSON.stringify({ token: idToken })
         });
 
         const data = await res.json();
-        if (res.ok) {
-            alert(data.message + " You can now sign in.");
-            location.reload(); 
-        } else {
-            alert(data.error);
+
+        if (res.status === 404) {
+            sessionStorage.setItem('pendingEmail', email);
+            sessionStorage.setItem('pendingToken', idToken);
+            
+            if (mode === 'login') {
+                alert("Account not registered. Please register your account first.");
+            }
+            
+            window.location.href = 'signup.html';
+            
+
+        } else if (res.ok) {
+            localStorage.setItem('role', data.user.role);
+            localStorage.setItem('username', data.user.username);
+            
+            window.location.href = data.user.role === 'teacher' ? 'teacher/dashboard.html' : 'student/dashboard.html';
         }
     } catch (error) {
-        alert("Creation failed: " + error.message);
+        console.error("Auth Error:", error);
     }
-  };
+};
 
-  document.getElementById('loginForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-
-    document.getElementById('loader').style.display = 'block';
-    document.getElementById('loginForm').style.display = 'none';
-
-    try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const idToken = await userCredential.user.getIdToken();
-        handleCredentialResponse({ credential: idToken });
-    } catch (error) {
-        document.getElementById('loader').style.display = 'none';
-        document.getElementById('loginForm').style.display = 'block';
-        alert("Login Failed: Please check your password or create an account.");
-    }
-  });
 </script>
 
-    <main class="container">
-        <div class="auth-container signin">
-            <div class="auth-card">
-                <div class="auth-header">
-                    <div class="logo-large">ScoreSafe</div>
-                    <p>Welcome back — sign in to continue</p>
-                </div>
+<main class="container">
+    <div class="auth-container signin">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="logo-large">ScoreSafe</div>
+                <p>Access your university academic records</p>
+            </div>
 
-                <div id="loader" class="loader-container" style="display: none;">
-                    <div class="spinner"></div>
-                    <p>Signing in...</p>
-                </div>
+<button type="button" class="btn-primary" onclick="loginWithGoogle('login')" style="margin-top: 20px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px;">
+    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18">
+    Sign in with Sorsu Email
+</button>
 
-                <button type="button" class="btn-primary outline" onclick="loginWithGoogle()" style="margin-top: 10px; background: white; color: #800000; border: 1px solid #ddd;">
-                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" style="margin-right: 10px; vertical-align: middle;">
-                    Sign in with Sorsu Email
-                </button>
+<div style="text-align: center; margin: 25px 0; color: #888; font-size: 0.8rem; position: relative;">
+    <span style="background: #fff; padding: 0 10px; position: relative; z-index: 1;">OR</span>
+    <hr style="position: absolute; top: 50%; width: 100%; border: 0; border-top: 1px solid #eee; margin: 0;">
+</div>
 
-                <div style="text-align: center; margin: 20px 0; color: #888; font-size: 0.85rem; position: relative;">
-                    <span style="background: #fff; padding: 0 15px; position: relative; z-index: 1;">OR</span>
-                    <hr style="position: absolute; top: 50%; width: 100%; border: 0; border-top: 1px solid #eee; margin: 0;">
-                </div>
-
-                <form id="loginForm">
-                    <div class="form-group">
-                        <label for="email"><i class="fas fa-envelope icon-label"></i> Email</label>
-                        <input type="email" id="email" required placeholder="Enter your Sorsu email">
-                    </div>
-                    <div class="form-group">
-                        <label for="password"><i class="fas fa-lock icon-label"></i> Password</label>
-                        <input type="password" id="password" required placeholder="Enter ScoreSafe password">
-                    </div>
-                    <button type="submit" class="btn-primary">Sign In</button>
-                    <div class="form-footer" style="margin-top: 25px;">
-                        <p style="font-size: 0.85rem;">New to ScoreSafe? <a href="#" onclick="loginWithGoogle()" style="color: #800000; font-weight: bold; text-decoration: none;">Create Account</a></p>
-                    </div>
-                </form>
-
-                <div class="form-footer" style="margin-top: 25px;">
-                    <p style="font-size: 0.8rem; color: #888;">Use your university credentials to access ScoreSafe.</p>
-                </div>
+<button type="button" class="btn-primary outline" onclick="loginWithGoogle('signup')" style="width: 100%; background: white; color: #800000; border: 2px solid #800000; padding: 12px; font-weight: bold;">
+    Register Sorsu Email
+</button>
+            <div class="form-footer" style="margin-top: 25px; border-top: 1px solid #f5f5f5; padding-top: 15px;">
+                <p style="font-size: 0.75rem; color: #999;">Authorized access for all Sorsogon State University campuses (Main, Bulan, Castilla, Magallanes).</p>
             </div>
         </div>
-    </main>
+    </div>
+</main>
 
-    <script src="js/config.js"></script>
-    <script src="js/auth.js"></script>
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
 </body>
 </html>

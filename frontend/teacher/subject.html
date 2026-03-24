@@ -34,7 +34,6 @@
         <section class="card">
             <div class="auth-header" style="text-align: left; margin-bottom: 20px;">
                 <h3><i class="fas fa-folder-plus icon-label"></i> Add New Subject</h3>
-                <p style="color: #666; font-size: 0.9rem;">Create a new subject category for records.</p>
             </div>
             <form id="addSubjectForm">
                 <div class="form-group">
@@ -61,9 +60,13 @@
                             <th>Action</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr class="empty-row"><td colspan="2">Loading subjects...</td></tr>
-                    </tbody>
+<tbody id="subjectTableBody">
+    <tr class="empty-row">
+        <td colspan="2" style="text-align: center; padding: 30px; color: #999;">
+            No subjects yet
+        </td>
+    </tr>
+</tbody>
                 </table>
             </div>
         </section>
