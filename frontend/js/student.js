@@ -8,17 +8,29 @@ const cropperModal = document.getElementById('cropperModal');
 window.onload = () => {
     renderStudentData(); 
     displayStudentProfile(); 
+
+    // Reset button functionality
+    document.getElementById('resetStudentProfile')?.addEventListener('click', () => {
+        if (confirm("Discard all unsaved changes?")) {
+            displayStudentProfile();
+            const fileInput = document.getElementById('studentAvatar');
+            if (fileInput) fileInput.value = "";
+        }
+    });
 };
 
 async function renderStudentData() {
-    const email = localStorage.getItem('username');
+    // 1. We identify the specific student by their email in localStorage
+    const email = localStorage.getItem('username'); 
+    
     const tbody = document.querySelector('#studentScoresTable tbody') || 
                   document.querySelector('#myRecordsTable tbody');
                   
-    if (!tbody) return;
+    if (!tbody || !email) return;
 
     try {
-        const res = await fetch(`${API_BASE_URL}/api/scores/get-records?email=${email}`);
+        // 2. We pass the email to the backend to TRIGGER the privacy filter
+        const res = await fetch(`${API_BASE_URL}/api/scores/get-records?email=${encodeURIComponent(email)}`);
         const records = await res.json();
         
         tbody.innerHTML = '';
@@ -44,9 +56,9 @@ async function renderStudentData() {
             tbody.appendChild(tr);
         });
 
+        // Dashboard Stats calculation
         const totalScoresEl = document.getElementById('studentTotalScores');
         const totalSubsEl = document.getElementById('studentTotalSubjects');
-
         if (totalScoresEl) totalScoresEl.innerText = records.length;
         if (totalSubsEl) {
             const uniqueSubs = [...new Set(records.map(r => r.subject_name))];
@@ -61,16 +73,13 @@ async function displayStudentProfile() {
     const email = localStorage.getItem('username');
     const profileForm = document.getElementById('studentProfileForm');
     if (!email || !profileForm) return;
-
     try {
         const res = await fetch(`${API_BASE_URL}/api/auth/profile?username=${email}`);
         const user = await res.json();
-
         if (res.ok) {
             document.getElementById('studentFullName').value = user.full_name || '';
             document.getElementById('studentEmail').value = user.username || '';
             document.getElementById('studentBio').value = user.bio || '';
-            
             const avatarWrapper = document.getElementById('studentAvatarPreview');
             if (avatarWrapper && user.profile_photo) {
                 const src = user.profile_photo.startsWith('http') ? 
@@ -82,6 +91,7 @@ async function displayStudentProfile() {
     } catch (err) { console.error("Profile load failed", err); }
 }
 
+// Cropper implementation (Same as teacher side)
 if (avatarInput) {
     avatarInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
@@ -91,25 +101,40 @@ if (avatarInput) {
                 imageToCrop.src = event.target.result;
                 cropperModal.style.display = 'flex';
                 if (cropper) cropper.destroy();
-                cropper = new Cropper(imageToCrop, {
-                    aspectRatio: 1,
-                    viewMode: 1
-                });
+                cropper = new Cropper(imageToCrop, { aspectRatio: 1, viewMode: 1 });
             };
             reader.readAsDataURL(file);
         }
     });
 }
 
+document.getElementById('cancelCrop')?.addEventListener('click', () => {
+    cropperModal.style.display = 'none';
+    avatarInput.value = ""; 
+});
+
 const confirmCropBtn = document.getElementById('confirmCrop');
 if (confirmCropBtn) {
     confirmCropBtn.addEventListener('click', () => {
+        if (!cropper) return;
         const canvas = cropper.getCroppedCanvas({ width: 400, height: 400 });
-        const croppedImageData = canvas.toDataURL('image/jpeg');
-        
-        document.getElementById('studentAvatarPreview').innerHTML = `<img src="${croppedImageData}" style="width:100%; height:100%; object-fit:cover; border-radius:12px;">`;
-        localStorage.setItem('tempPhoto', croppedImageData);
-        cropperModal.style.display = 'none';
+        canvas.toBlob(async (blob) => {
+            const formData = new FormData();
+            formData.append('profile_photo', blob, 'avatar.jpg');
+            formData.append('email', localStorage.getItem('username'));
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/auth/profile/upload-photo`, {
+                    method: 'POST',
+                    body: formData 
+                });
+                if (res.ok) {
+                    alert("Updated!");
+                    cropperModal.style.display = 'none';
+                    avatarInput.value = ""; 
+                    displayStudentProfile(); 
+                } else { alert("Failed."); }
+            } catch (err) { alert("Error."); }
+        }, 'image/jpeg', 0.9);
     });
 }
 
@@ -120,32 +145,66 @@ if (studentProfileForm) {
         const fullName = document.getElementById('studentFullName').value;
         const bio = document.getElementById('studentBio').value;
         const email = localStorage.getItem('username');
-        const photoData = localStorage.getItem('tempPhoto');
-
         try {
             const res = await fetch(`${API_BASE_URL}/api/auth/profile/update`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ fullName, bio, email, photo: photoData })
+                body: JSON.stringify({ fullName, bio, email })
             });
-
             if (res.ok) {
                 localStorage.setItem('fullName', fullName);
-                if (photoData) localStorage.setItem('profilePic', photoData);
-                alert("Profile updated successfully!");
+                alert("Profile saved!");
+                displayStudentProfile();
             }
-        } catch (err) {
-            alert("Failed to update profile.");
-        }
+        } catch (err) { alert("Failed."); }
     });
 }
+
+// Filter engine for Student side
+function applyFilter(tableId, type, value) {
+    const table = document.querySelector(tableId);
+    if (!table) return;
+    const rows = table.querySelectorAll('tbody tr:not(.empty-row)');
+    rows.forEach(row => {
+        if (type === 'reset' || value === 'all' || value === '') {
+            row.style.display = '';
+            return;
+        }
+        const categoryCell = row.children[4].innerText.trim().toLowerCase();
+        if (categoryCell === value.toLowerCase()) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    document.querySelectorAll('.filter-menu').forEach(m => m.classList.remove('active'));
+}
+
+// Search and Filter UI logic
+document.getElementById('studentSearchInput')?.addEventListener('input', function() {
+    const val = this.value.toLowerCase();
+    const tableId = this.getAttribute('data-table');
+    const rows = document.querySelectorAll(`${tableId} tbody tr:not(.empty-row)`);
+    rows.forEach(r => r.style.display = r.innerText.toLowerCase().includes(val) ? "" : "none");
+});
+
+document.addEventListener('click', (e) => {
+    if (e.target.closest('.filter-btn')) {
+        const menu = e.target.closest('.search-container').querySelector('.filter-menu');
+        menu.classList.toggle('active');
+    } else {
+        document.querySelectorAll('.filter-menu').forEach(m => m.classList.remove('active'));
+    }
+});
 
 document.querySelectorAll('.logout-btn').forEach(button => {
     button.addEventListener('click', (e) => {
         e.preventDefault();
-        if (confirm("Are you sure you want to sign out?")) {
+        if (confirm("Sign out?")) {
             localStorage.clear();
             window.location.href = '../signin.html';
         }
     });
 });
+
+window.applyFilter = applyFilter;

@@ -37,13 +37,18 @@ router.post('/register-sorsu', async (req, res) => {
         const assignedRole = whitelist.length > 0 ? 'teacher' : 'student';
 
         const [result] = await db.execute(
-            "INSERT INTO users (full_name, username, password, role, campus, profile_photo, is_verified) VALUES (?, ?, 'sso_only', ?, ?, ?, 1)",
+            "INSERT INTO users (full_name, username, password, role, campus, profile_photo, is_verified, is_approved) VALUES (?, ?, 'sso_only', ?, ?, ?, 1, 0)",
             [name, email, assignedRole, campus, picture]
         );
 
-        const [newUser] = await db.execute("SELECT id, role, username FROM users WHERE id = ?", [result.insertId]);
-        res.json({ message: "Registration successful!", user: newUser[0] });
+        const [newUser] = await db.execute("SELECT id, role, username, is_approved FROM users WHERE id = ?", [result.insertId]);
+        
+        res.json({ 
+            message: "Registration successful!", 
+            user: newUser[0] 
+        });
     } catch (error) {
+        console.error(error);
         res.status(400).json({ error: error.message });
     }
 });
@@ -66,7 +71,7 @@ router.get('/profile', async (req, res) => {
     const { all, username } = req.query; 
     try {
         if (all === 'true') {
-            const [users] = await db.execute("SELECT id, full_name, username, role FROM users");
+            const [users] = await db.execute("SELECT id, full_name, username, role, campus, is_approved, is_verified FROM users");
             return res.json(users);
         }
         const [users] = await db.execute('SELECT full_name, username, bio, profile_photo FROM users WHERE username = ?', [username]);
@@ -104,14 +109,19 @@ router.post('/google-login', async (req, res) => {
         const decodedToken = await admin.auth().verifyIdToken(token);
         const { email } = decodedToken;
 
-        let [users] = await db.execute("SELECT * FROM users WHERE username = ?", [email]);
+        let [users] = await db.execute(
+            "SELECT id, role, username, full_name, profile_photo, is_approved FROM users WHERE username = ?", 
+            [email]
+        );
         
         if (users.length === 0) {
             return res.status(404).json({ error: "User not registered." });
         }
 
-        const user = users[0];
-        res.json({ message: "Authenticated!", user: { role: user.role, username: user.username } });
+        res.json({ 
+            message: "Authenticated!", 
+            user: users[0] 
+        });
     } catch (error) {
         res.status(401).json({ error: "Invalid Credentials" });
     }
@@ -128,6 +138,45 @@ router.get('/check-user', async (req, res) => {
     } catch (err) {
         res.status(500).json({ error: "Database check failed" });
     }
+});
+
+router.post('/authorize-student', async (req, res) => {
+    const { email, fullName } = req.body;
+    try {
+        const [existing] = await db.execute("SELECT id FROM users WHERE username = ?", [email]);
+        if (existing.length > 0) return res.status(400).json({ error: "Email already authorized or registered." });
+
+        await db.execute("DELETE FROM teacher_whitelist WHERE email = ?", [email]);
+
+        await db.execute(
+            "INSERT INTO users (full_name, username, password, role, is_verified, is_approved) VALUES (?, ?, 'pending_sso', 'student', 0, 0)",
+            [fullName, email]
+        );
+
+        res.json({ message: "Student authorized successfully." });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+router.post('/approve-student/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        await db.execute("UPDATE users SET is_approved = 1 WHERE id = ?", [id]);
+        res.json({ message: "Student approved successfully!" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Database update failed." });
+    }
+});
+
+router.get('/google-login-status', async (req, res) => {
+    const { email } = req.query;
+    try {
+        const [users] = await db.execute("SELECT is_approved FROM users WHERE username = ?", [email]);
+        if (users.length > 0) res.json(users[0]);
+        else res.status(404).json({ error: "Not found" });
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 module.exports = router;

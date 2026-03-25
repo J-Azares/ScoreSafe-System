@@ -172,7 +172,6 @@ async function renderSubjectTable() {
     } catch (e) { console.error(e); }
 }
 
-
 const addTeacherForm = document.getElementById('addTeacherForm');
 if (addTeacherForm) {
     addTeacherForm.addEventListener('submit', async (e) => {
@@ -232,19 +231,114 @@ if (recordForm) {
     });
 }
 
+const authForm = document.getElementById('authorizeStudentForm');
+if (authForm) {
+    authForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('authEmail').value;
+        const tempName = document.getElementById('authName').value;
+        const campus = document.getElementById('authCampus').value;
+
+        if (email === localStorage.getItem('username')) {
+            alert("Error: You cannot authorize yourself as a student.");
+            return;
+        }
+
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/auth/authorize-student`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, fullName: tempName, campus })
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                alert(data.message || "Student authorized! They can now log in using their Sorsu email.");
+                authForm.reset();
+                renderEnrollmentTable(); 
+                const err = await res.json();
+                alert(err.error);
+            }
+        } catch (err) {
+            alert("Connection error.");
+        }
+    });
+}
+
+const addSubjectForm = document.getElementById('addSubjectForm');
+if (addSubjectForm) {
+    addSubjectForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const subjectName = document.getElementById('subjectName').value;
+
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/scores/add-subject`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: subjectName })
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                alert("Subject added successfully!");
+                addSubjectForm.reset();
+                renderSubjectTable(); 
+            } else {
+                alert(data.error || "Failed to add subject.");
+            }
+        } catch (err) {
+            console.error("Subject add error:", err);
+            alert("Connection error.");
+        }
+    });
+}
+
+async function deleteSubject(id) {
+    if (!confirm("Are you sure you want to remove this subject?")) return;
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/scores/delete-subject/${id}`, {
+            method: 'DELETE'
+        });
+
+        if (res.ok) {
+            alert("Subject removed.");
+            renderSubjectTable();
+        } else {
+            const data = await res.json();
+            alert(data.error || "Delete failed.");
+        }
+    } catch (err) {
+        alert("Error connecting to server.");
+    }
+}
+
+window.deleteSubject = deleteSubject;
+
 window.addEventListener('load', () => {
     if (document.getElementById('teacherProfileForm')) {
         displayProfileInfo();
         document.getElementById('saveTeacherProfile')?.addEventListener('click', saveProfileChanges);
+        
+        // RESET BUTTON LOGIC FOR TEACHER
+        document.getElementById('resetTeacherProfile')?.addEventListener('click', () => {
+            if (confirm("Discard all unsaved changes?")) {
+                displayProfileInfo();
+                const fileInput = document.getElementById('teacherAvatar');
+                if (fileInput) fileInput.value = "";
+            }
+        });
     }
     
     loadDropdowns();
     updateDashboardStats();
 
     if (document.getElementById('scoresTable')) renderScoresTables();
-    if (document.getElementById('studentsTable')) renderStudentTable();
+    if (document.getElementById('studentsTable')) renderActiveStudentTable(); // Updated to the new split function
     if (document.getElementById('subjectsTable')) renderSubjectTable();
     if (document.getElementById('facultyTable')) renderFacultyTable();
+    if (document.getElementById('enrollmentTable')) renderEnrollmentTable(); // Added for enrollment page
 });
 
 
@@ -279,9 +373,11 @@ async function updateDashboardStats() {
             fetch(`${API_BASE_URL}/api/auth/profile?all=true`).then(r => r.json()),
             fetch(`${API_BASE_URL}/api/scores/get-subjects`).then(r => r.json())
         ]);
-        const students = users.filter(u => u.role === 'student');
+        // FILTER: Dashboard only counts students who are APPROVED
+        const approvedStudents = users.filter(u => u.role === 'student' && u.is_approved === 1);
+        
         if (document.getElementById('totalRecords')) document.getElementById('totalRecords').innerText = scores.length;
-        if (document.getElementById('totalStudents')) document.getElementById('totalStudents').innerText = students.length;
+        if (document.getElementById('totalStudents')) document.getElementById('totalStudents').innerText = approvedStudents.length;
         if (document.getElementById('totalSubjects')) document.getElementById('totalSubjects').innerText = subjects.length;
     } catch (e) { console.error(e); }
 }
@@ -292,7 +388,8 @@ async function loadDropdowns() {
     try {
         if (studentSelect) {
             const users = await fetch(`${API_BASE_URL}/api/auth/profile?all=true`).then(r => r.json());
-            const students = users.filter(u => u.role === 'student');
+            // DROPDOWN: Only show approved students
+            const students = users.filter(u => u.role === 'student' && u.is_approved === 1);
             studentSelect.innerHTML = '<option value="">-- Select Student --</option>' + 
                 students.map(s => `<option value="${s.id}">${s.full_name}</option>`).join('');
         }
@@ -303,6 +400,104 @@ async function loadDropdowns() {
         }
     } catch (e) { console.error(e); }
 }
+
+// --- NEW SPLIT LOGIC FUNCTIONS ---
+
+async function renderEnrollmentTable() {
+    const tbody = document.querySelector('#enrollmentTable tbody');
+    if (!tbody) return;
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/auth/profile?all=true`);
+        const users = await res.json();
+        
+        // SHOW: Students who signed up or authorized but NOT approved yet
+        const pendingApproval = users.filter(u => u.role === 'student' && u.is_approved === 0);
+
+        if (pendingApproval.length === 0) {
+            tbody.innerHTML = '<tr class="empty-row"><td colspan="5">No pending authorizations.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = pendingApproval.map(s => `
+            <tr>
+                <td>
+                    <span class="status-badge ${s.is_verified ? 'active' : 'pending'}">
+                        ${s.is_verified ? 'Ready to Approve' : 'Authorized'}
+                    </span>
+                </td>
+                <td>${s.username}</td>
+                <td>${s.full_name}</td>
+                <td>${s.campus || '---'}</td> 
+                <td>
+                    <button class="btn" onclick="approveStudent(${s.id})">Approve</button>
+                    <button class="action-link-delete" onclick="handleRemoveStudent(${s.id}, '${s.full_name}')">Decline</button>
+                </td>
+            </tr>
+        `).join('');
+    } catch (err) { console.error(err); }
+}
+
+async function renderActiveStudentTable() {
+    const tbody = document.querySelector('#studentsTable tbody');
+    if (!tbody) return; 
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/auth/profile?all=true`);
+        const users = await res.json();
+        
+        // SHOW: Only students who HAVE been approved
+        const activeStudents = users.filter(u => u.role === 'student' && Number(u.is_approved) === 1);
+
+        if (document.getElementById('totalStudentCount')) 
+            document.getElementById('totalStudentCount').innerText = activeStudents.length;
+
+        if (activeStudents.length === 0) {
+            tbody.innerHTML = '<tr class="empty-row"><td colspan="5">No active students yet.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = activeStudents.map(s => `
+            <tr>
+        <td><span class="status-badge active">ACTIVE</span></td>
+        <td>${s.username}</td>
+        <td>${s.full_name}</td>
+        <td>${s.campus || 'N/A'}</td>
+        <td style="text-align: center;">
+            <div style="display: flex; gap: 5px; justify-content: center;">
+                <button class="btn-view" onclick="viewPerformance('${s.username}')">View</button>
+                <button class="btn-drop" onclick="handleRemoveStudent(${s.id}, '${s.full_name}')">Drop</button>
+            </div>
+        </td>
+    </tr>
+        `).join('');
+    } catch (err) { console.error(err); }
+}
+
+async function approveStudent(id) {
+    if (!confirm("Approve this student for enrollment?")) return;
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/auth/approve-student/${id}`, { method: 'POST' });
+        if (res.ok) {
+            alert("Student approved!");
+            renderEnrollmentTable();
+            updateDashboardStats();
+        }
+    } catch (err) { alert("Error approving student."); }
+}
+
+async function handleRemoveStudent(id, name) {
+    if (!confirm(`Are you sure you want to remove ${name}?`)) return;
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/auth/user/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+            alert("Removed successfully");
+            location.reload(); 
+        }
+    } catch (err) { alert("Error removing user."); }
+}
+
+// --- CROPPER LOGIC ---
 
 let cropper;
 const avatarInput = document.getElementById('teacherAvatar');
@@ -330,6 +525,73 @@ avatarInput?.addEventListener('change', function(e) {
     }
 });
 
+document.addEventListener('click', (e) => {
+    if (e.target.closest('.filter-btn')) {
+        const menu = e.target.closest('.search-container').querySelector('.filter-menu');
+        menu.classList.toggle('active');
+    } else {
+        document.querySelectorAll('.filter-menu').forEach(m => m.classList.remove('active'));
+    }
+});
+
+function applyFilter(tableId, category, value) {
+    const table = document.querySelector(tableId);
+    const rows = table.querySelectorAll('tbody tr:not(.empty-row)');
+    
+    rows.forEach(row => {
+        let textToMatch = "";
+        
+        if (category === 'campus') textToMatch = row.children[3].innerText;
+        if (category === 'role') textToMatch = row.children[2].innerText;
+        if (category === 'category') textToMatch = row.children[5].innerText;
+        if (category === 'reset') { row.style.display = ""; return; }
+
+        if (value === 'all' || textToMatch.toLowerCase().includes(value.toLowerCase())) {
+            row.style.display = "";
+        } else {
+            row.style.display = "none";
+        }
+    });
+}
+
+function applyFilter(tableId, type, value) {
+    const table = document.querySelector(tableId);
+    if (!table) return;
+    
+    const rows = table.querySelectorAll('tbody tr:not(.empty-row)');
+    
+    rows.forEach(row => {
+        if (type === 'reset') {
+            row.style.display = '';
+            return;
+        }
+
+        // Index 5 is the 'Category' column in the Scores Table
+        const categoryCell = row.children[5].innerText.trim();
+
+        if (value === 'all' || categoryCell.toLowerCase() === value.toLowerCase()) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    // Close the menu after clicking
+    document.querySelectorAll('.filter-menu').forEach(m => m.classList.remove('active'));
+}
+
+document.querySelectorAll('.table-search').forEach(input => {
+    input.addEventListener('input', function() {
+        const value = this.value.toLowerCase();
+        const tableId = this.getAttribute('data-table');
+        const rows = document.querySelectorAll(`${tableId} tbody tr:not(.empty-row)`);
+        
+        rows.forEach(row => {
+            row.style.display = row.innerText.toLowerCase().includes(value) ? "" : "none";
+        });
+    });
+});
+
 document.getElementById('cancelCrop')?.addEventListener('click', () => {
     cropperModal.style.display = 'none';
     avatarInput.value = ""; 
@@ -338,13 +600,11 @@ document.getElementById('cancelCrop')?.addEventListener('click', () => {
 document.getElementById('confirmCrop')?.addEventListener('click', () => {
     if (!cropper) return;
 
-    const canvas = cropper.getCroppedCanvas({
-        width: 400,
-        height: 400
-    });
+    const canvas = cropper.getCroppedCanvas({ width: 400, height: 400 });
 
     canvas.toBlob(async (blob) => {
         const formData = new FormData();
+        // FIELD NAME MUST MATCH: 'profile_photo'
         formData.append('profile_photo', blob, 'avatar.jpg');
         formData.append('email', localStorage.getItem('username'));
 
@@ -356,20 +616,20 @@ document.getElementById('confirmCrop')?.addEventListener('click', () => {
 
             if (res.ok) {
                 alert("Profile picture updated!");
-                cropperModal.style.display = 'none';
-                avatarInput.value = ""; 
-                displayProfileInfo(); 
+                location.reload(); 
             } else {
-                alert("Failed to upload image.");
+                const errData = await res.json();
+                alert("Server Error: " + errData.error);
             }
         } catch (err) {
-            console.error("Upload error:", err);
-            alert("Server connection error.");
+            alert("Connection error to backend.");
         }
-    }, 'image/jpeg', 0.9); 
+    }, 'image/jpeg', 0.9);
 });
 
 window.editScore = editScore;
 window.lockScore = lockScore;
 window.displayProfileInfo = displayProfileInfo;
 window.saveProfileChanges = saveProfileChanges;
+window.approveStudent = approveStudent;
+window.handleRemoveStudent = handleRemoveStudent;

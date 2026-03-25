@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-
+<div class="page-wrapper">
 <header class="topbar">
   <div class="container nav-wrapper">
     <div class="logo">ScoreSafe</div>
@@ -27,21 +27,16 @@
 </header>
 
 <main class="container">
-
   <section class="stats-grid">
     <div class="stat-card">
-      <div class="stat-icon">
-        <i class="fas fa-star icon-label"></i>
-      </div>
+      <div class="stat-icon"><i class="fas fa-star icon-label"></i></div>
       <div class="stat-content">
         <p class="stat-label">Total Scores</p>
         <h3 id="studentTotalScores">0</h3>
       </div>
     </div>
     <div class="stat-card">
-      <div class="stat-icon">
-        <i class="fas fa-book icon-label"></i>
-      </div>
+      <div class="stat-icon"><i class="fas fa-book icon-label"></i></div>
       <div class="stat-content">
         <p class="stat-label">Subjects Enrolled</p>
         <h3 id="studentTotalSubjects">0</h3>
@@ -53,8 +48,13 @@
     <div class="table-header">
       <h3>Recent Scores</h3>
       <div class="search-container">
-          <input type="text" id="studentSearchInput" class="table-search" data-table="#studentScoresTable">
-          <button type="button" class="search-btn" aria-label="Search"><i class="fas fa-search search-icon"></i></button>
+          <input type="text" id="studentSearchInput" class="table-search" placeholder="Search my grades..." data-table="#studentScoresTable">
+          <button type="button" class="filter-btn"><i class="fas fa-filter"></i></button>
+          <div class="filter-menu">
+              <div class="filter-header">Category</div>
+              <div class="filter-item" onclick="applyFilter('#studentScoresTable', 'category', 'Quiz')">Quizzes</div>
+              <div class="filter-item" onclick="applyFilter('#studentScoresTable', 'reset', '')">Clear Filters</div>
+          </div>
       </div>
     </div>
     <div class="table-wrapper">
@@ -82,7 +82,7 @@
     <p>&copy; 2026 ScoreSafe. All rights reserved.</p>
   </div>
 </footer>
-
+</div>
 <script src="../js/student.js"></script>
 </body>
 </html>

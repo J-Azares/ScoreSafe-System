@@ -8,13 +8,14 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-
+<div class="page-wrapper">
 <header class="topbar">
   <div class="container nav-wrapper">
     <div class="logo">ScoreSafe</div>
     <div class="hamburger" id="hamburger">&#9776;</div>
     <nav>
       <a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+      <a href="enrollment.html"><i class="fas fa-users-cog"></i> Enrollment</a>
       <a class="active" href="student.html"><i class="fas fa-user-graduate"></i> Student</a>
       <a href="subject.html"><i class="fas fa-book"></i> Subject</a>
       <a href="record-score.html"><i class="fas fa-plus-circle"></i> Record</a>
@@ -25,46 +26,57 @@
     <div class="header-actions">
       <a href="#" class="btn outline logout-btn"><i class="fas fa-sign-out-alt"></i> <span class="logout-label">Sign out</span></a>
     </div>
-    </nav>
   </div>
 </header>
 
 <main class="container">
 
-  <section class="card">
-    <form id="addStudentForm">
-      <div class="form-group">
-        <label for="studentEmail"><i class="fas fa-envelope icon-label"></i> Email</label>
-        <input type="email" id="studentEmail" required>
-      </div>
-      <div class="form-group">
-        <label for="studentName"><i class="fas fa-user icon-label"></i> Full Name</label>
-        <input type="text" id="studentName" required>
-      </div>
-      <button type="submit" class="btn"><i class="fas fa-user-plus"></i> Add Student</button>
-    </form>
-    <p id="studentMsg"></p>
-  </section>
+<section class="card">
+    <div class="auth-header" style="text-align: left; margin-bottom: 20px;">
+        <h3><i class="fas fa-user-check icon-label"></i> Manage Class Enrollment</h3>
+    </div>
+    
+    <div style="display: flex; gap: 20px;">
+        <div class="stat-mini-card">
+            <span class="label">Total Students</span>
+            <span class="value" id="totalStudentCount">0</span>
+        </div>
+        <div class="stat-mini-card">
+            <span class="label">Recent Signups (Today)</span>
+            <span class="value" id="todaySignupCount">0</span>
+        </div>
+    </div>
+</section>
 
   <section class="card table-section">
     <div class="table-header">
       <h3>Added Students</h3>
       <div class="search-container">
         <input type="text" id="searchInput" class="table-search" placeholder="Search students..." data-table="#studentsTable">
-        <button type="button" class="search-btn" aria-label="Search"><i class="fas fa-search search-icon"></i></button>
+        <button type="button" class="filter-btn"><i class="fas fa-filter"></i></button>
+         <div class="filter-menu">
+    <div class="filter-header">Filter by Campus</div>
+    <div class="filter-item" onclick="applyFilter('#studentsTable', 'reset', 'all')">All</div>
+    <div class="filter-item" onclick="applyFilter('#studentsTable', 'campus', 'Sorsogon')">Sorsogon City</div>
+    <div class="filter-item" onclick="applyFilter('#studentsTable', 'campus', 'Bulan')">Bulan</div>
+    <div class="filter-item" onclick="applyFilter('#studentsTable', 'campus', 'Castilla')">Castilla</div>
+    <div class="filter-item" onclick="applyFilter('#studentsTable', 'campus', 'Magallanes')">Magallanes</div>
+</div>
       </div>
     </div>
     <div class="table-wrapper">
       <table id="studentsTable">
   <thead>
     <tr>
-      <th>Email</th>
-      <th>Full Name</th>
-      <th>Action</th>
+        <th>Status</th>
+        <th>Email</th>
+        <th>Full Name</th>
+        <th>Campus</th>
+        <th style="text-align: center; width: 120px;">Actions</th> 
     </tr>
-  </thead>
+</thead>
   <tbody>
-    <tr class="empty-row"><td colspan="3">No students yet</td></tr> 
+    <tr class="empty-row"><td colspan="5">No active students yet</td></tr> 
   </tbody>
 </table>
     </div>
@@ -76,7 +88,7 @@
     <p>&copy; 2026 ScoreSafe. All rights reserved.</p>
   </div>
 </footer>
-
+</div>
 <script src="../js/config.js"></script>
 <script src="../js/teacher.js"></script>
 </body>

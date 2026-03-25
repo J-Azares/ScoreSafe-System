@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScoreSafe | Approval Pending</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body style="background: #f4f7f6; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0;">
+
+    <div class="auth-card" style="text-align: center; max-width: 450px; padding: 40px; border-top: 5px solid #f39c12;">
+        <i class="fas fa-user-clock" style="font-size: 4rem; color: #f39c12; margin-bottom: 20px;"></i>
+        
+        <h2 style="color: #333;">Registration Received!</h2>
+        
+        <p style="color: #666; line-height: 1.6; margin: 20px 0;">
+            Welcome to <strong>ScoreSafe</strong>. Your identity has been verified, but your account is currently <strong>pending faculty approval</strong>.
+        </p>
+
+        <div style="background: #fff9f0; padding: 15px; border-radius: 8px; border: 1px solid #ffeeba; font-size: 0.85rem; color: #856404; text-align: left;">
+            <i class="fas fa-info-circle"></i> <strong>What happens next?</strong><br>
+            Your instructor will review your enrollment. Once approved, you'll be able to view your academic records.
+        </div>
+
+        <button onclick="logout()" class="btn outline" style="margin-top: 30px; width: 100%;">
+            <i class="fas fa-sign-out-alt"></i> Return to Sign In
+        </button>
+    </div>
+
+    <script>
+        setInterval(async () => {
+    const email = localStorage.getItem('username');
+    if (!email) return;
+
+    const res = await fetch(`http://127.0.0.1:3000/api/auth/google-login-status?email=${email}`);
+    const data = await res.json();
+
+    if (data.is_approved === 1) {
+        window.location.href = 'student/dashboard.html';
+    }
+}, 30000);
+
+        function logout() {
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.href = 'signin.html';
+        }
+    </script>
+</body>
+</html>

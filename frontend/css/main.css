@@ -1106,6 +1106,264 @@ select:-webkit-autofill:focus {
     min-height: 150px; 
     background: #fff;
 }
+
+.badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.badge.verified {
+    background: #e6f4ea;
+    color: #1e8e3e; /* Green for students who already signed in */
+}
+
+.badge.pending {
+    background: #fff4e5;
+    color: #b05d00; /* Orange for students you authorized but haven't signed in yet */
+}
+
+.btn-icon.delete {
+    background: none;
+    border: 1px solid #ffcccc;
+    color: #cc0000;
+    padding: 5px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-icon.delete:hover {
+    background: #ffeeee;
+}
+
+/* Status Badges */
+.status-badge {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-left: 8px;
+    display: inline-block;
+}
+
+.status-badge.active {
+    background-color: #e6f4ea;
+    color: #1e7e34;
+    border: 1px solid #c3e6cb;
+}
+
+.status-badge.pending {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}
+
+/* Table Text Treatments */
+.font-medium {
+    font-weight: 500;
+    color: #333;
+}
+
+.user-cell {
+    display: flex;
+    align-items: center;
+}
+
+/* Professional Delete Button */
+.action-link-delete {
+    background: transparent;
+    border: 1px solid #dc3545;
+    color: #dc3545;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.action-link-delete:hover {
+    background: #dc3545;
+    color: #fff;
+}
+
+/* --- 1. GLOBAL RESET & BASE STYLES --- */
+html, body {
+    height: 100%;
+    margin: 0;
+    font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+    background-color: #f4f7f6; /* Light professional background */
+    color: #333;
+    line-height: 1.6;
+}
+
+/* --- 2. LAYOUT STRUCTURE (Sticky Footer Logic) --- */
+.page-wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* The Main Container (Full width & Pro alignment) */
+.container {
+    flex: 1 0 auto; /* Pushes footer to the bottom */
+    width: 95%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 30px 0;
+}
+
+/* --- 3. COMPONENTS (Cards & Tables) --- */
+.card {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    width: 100%; 
+    margin-bottom: 30px;
+    overflow: hidden;
+    height: auto;
+}
+
+/* Table Specifics */
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.table-wrapper table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+}
+
+/* Ensure the red header spans the full width */
+.table-wrapper thead tr {
+    background-color: #800000;
+    color: white;
+}
+
+.table-wrapper th, 
+.table-wrapper td {
+    padding: 15px 20px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+/* --- 4. FILTER & SEARCH UI --- */
+.search-container {
+    display: flex;
+    position: relative;
+    align-items: center;
+}
+
+.filter-btn {
+    background: #800000;
+    color: white;
+    border: none;
+    width: 45px;
+    height: 45px;
+    border-radius: 4px;
+    margin-left: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s;
+}
+
+.filter-btn:hover {
+    background: #a00000;
+}
+
+/* The Dropdown Menu */
+.filter-menu {
+    position: absolute;
+    top: 110%;
+    right: 0;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    width: 200px;
+    display: none;
+    z-index: 1000;
+    padding: 10px 0;
+    border: 1px solid #eee;
+}
+
+.filter-menu.active {
+    display: block;
+}
+
+.filter-item {
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #444;
+    transition: background 0.2s;
+}
+
+.filter-item:hover {
+    background: #f8f9fa;
+    color: #800000;
+}
+
+.filter-header {
+    padding: 5px 20px;
+    font-weight: bold;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: #999;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 5px;
+}
+
+/* --- 5. FOOTER --- */
+.site-footer {
+    flex-shrink: 0;
+    background-color: #800000;
+    color: white;
+    padding: 20px 0;
+    text-align: center;
+    border-top: 3px solid rgba(0,0,0,0.1);
+}
+
+.footer-container p {
+    margin: 0;
+    font-size: 0.85rem;
+    opacity: 0.9;
+    letter-spacing: 0.5px;
+}
+
+.filter-menu {
+    position: absolute;
+    top: 110%; /* Sits just below the filter button */
+    right: 0;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    width: 200px;
+    z-index: 9999; /* Higher than the table header */
+    padding: 10px 0;
+    border: 1px solid #ddd;
+    
+    /* THE FIX: Constraints and Scrolling */
+    max-height: 250px; /* Limits height so it doesn't go off screen */
+    overflow-y: auto;  /* Adds a scrollbar if content is too long */
+    display: none;     /* Hidden by default */
+}
+
+/* Ensure the parent doesn't clip the dropdown */
+.card, .table-section {
+    overflow: visible !important; 
+}
+
+/* Keep the table scrollable but allow the menu to pop out */
+.table-wrapper {
+    overflow: visible; 
+}
+
 /* ========================
    Modal (Sign out confirmation)
 ======================== */

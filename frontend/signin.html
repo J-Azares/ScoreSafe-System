@@ -63,10 +63,19 @@ window.loginWithGoogle = async (mode = 'login') => {
             localStorage.setItem('role', data.user.role);
             localStorage.setItem('username', data.user.username);
             
-            window.location.href = data.user.role === 'teacher' ? 'teacher/dashboard.html' : 'student/dashboard.html';
+            if (data.user.role === 'student') {
+                if (data.user.is_approved === 0) {
+                    window.location.href = 'waiting.html';
+                } else {
+                    window.location.href = 'student/dashboard.html';
+                }
+            } else {
+                window.location.href = 'teacher/dashboard.html';
+            }
         }
-    } catch (error) {
-        console.error("Auth Error:", error);
+} catch (err) {
+        console.error(err);
+        alert("Authentication failed. Please try again.");
     }
 };
 

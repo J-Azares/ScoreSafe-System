@@ -9,12 +9,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
+    <div class="page-wrapper">
     <header class="topbar">
         <div class="container nav-wrapper">
             <div class="logo">ScoreSafe</div>
             <div class="hamburger" id="hamburger">&#9776;</div>
             <nav>
                 <a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                <a href="enrollment.html"><i class="fas fa-users-cog"></i> Enrollment</a>
                 <a href="student.html"><i class="fas fa-user-graduate"></i> Student</a>
                 <a href="subject.html"><i class="fas fa-book"></i> Subject</a>
                 <a class="active" href="record-score.html"><i class="fas fa-plus-circle"></i> Record</a>
@@ -64,11 +66,11 @@
                     </div>
                     <div class="form-group">
                         <label for="totalItemsInput">Total Items</label>
-                        <input type="number" id="totalItemsInput" placeholder="Max Score" required>
+                        <input type="number" id="totalItemsInput" placeholder="Enter total items" required>
                     </div>
                     <div class="form-group">
                         <label for="score">Student Score</label>
-                        <input type="number" id="score" placeholder="Earned" required>
+                        <input type="number" id="score" placeholder="Enter student's score" required>
                     </div>
                 </div>
 
@@ -82,11 +84,21 @@
         </section>
 
         <section class="card table-section" style="margin-top: 20px;">
-            <div class="table-header">
+            <div class="table-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h3>Recorded Scores</h3>
-                <div class="search-container">
-                    <input type="text" id="searchInput" class="table-search" placeholder="Filter records...">
-                    <button type="button" class="search-btn"><i class="fas fa-search"></i></button>
+                <div class="search-container" style="display: flex; position: relative;">
+                    <input type="text" id="searchInput" class="table-search" placeholder="Search records..." data-table="#scoresTable">
+                    <button type="button" class="filter-btn" style="background: #800000; color: white; border: none; width: 45px; height: 45px; border-radius: 4px; margin-left: 10px; cursor: pointer;">
+                        <i class="fas fa-filter"></i>
+                    </button>
+                    <div class="filter-menu">
+    <div class="filter-header">Category</div>
+    <div class="filter-item" onclick="applyFilter('#scoresTable', 'reset', '')">All</div>
+    <div class="filter-item" onclick="applyFilter('#scoresTable', 'category', 'Quiz')">Quizzes</div>
+    <div class="filter-item" onclick="applyFilter('#scoresTable', 'category', 'Activity')">Activities</div>
+    <div class="filter-item" onclick="applyFilter('#scoresTable', 'category', 'Performance')">Performance</div>
+    <div class="filter-item" onclick="applyFilter('#scoresTable', 'category', 'Examination')">Exams</div>
+</div>
                 </div>
             </div>
             <div class="table-wrapper">
@@ -100,7 +112,7 @@
                             <th>Paper</th>
                             <th>Category</th>
                             <th>Date</th>
-                            <th>Actions</th>
+                            <th style="text-align: center;">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -112,10 +124,11 @@
     </main>
 
     <footer class="site-footer">
-  <div class="container footer-container">
-    <p>&copy; 2026 ScoreSafe. All rights reserved.</p>
-  </div>
-</footer>
+        <div class="container footer-container">
+            <p>&copy; 2026 ScoreSafe. All rights reserved.</p>
+        </div>
+    </footer>
+    </div>
 
     <script src="../js/config.js"></script>
     <script src="../js/teacher.js"></script>
