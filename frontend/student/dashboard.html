@@ -27,33 +27,44 @@
 </header>
 
 <main class="container">
-  <section class="stats-grid">
-    <div class="stat-card">
-      <div class="stat-icon"><i class="fas fa-star icon-label"></i></div>
-      <div class="stat-content">
-        <p class="stat-label">Total Scores</p>
-        <h3 id="studentTotalScores">0</h3>
-      </div>
+<section class="stats-grid" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-bottom: 32px; width: 100%;">
+    <div class="stat-card" style="padding: 24px;">
+        <div class="stat-icon"><i class="fas fa-list-check icon-label"></i></div>
+        <div class="stat-content">
+            <p class="stat-label">Total Records</p>
+            <h3 id="studentTotalScores">0</h3>
+        </div>
     </div>
-    <div class="stat-card">
-      <div class="stat-icon"><i class="fas fa-book icon-label"></i></div>
-      <div class="stat-content">
-        <p class="stat-label">Subjects Enrolled</p>
-        <h3 id="studentTotalSubjects">0</h3>
-      </div>
+    <div class="stat-card" style="padding: 24px;">
+        <div class="stat-icon"><i class="fas fa-book icon-label"></i></div>
+        <div class="stat-content">
+            <p class="stat-label">Subjects Enrolled</p>
+            <h3 id="studentTotalSubjects">0</h3>
+        </div>
     </div>
-  </section>
+    <div class="stat-card" style="padding: 24px;">
+        <div class="stat-icon"><i class="fas fa-percent icon-label"></i></div>
+        <div class="stat-content">
+            <p class="stat-label">Overall Average</p>
+            <h3 id="studentAverage">0%</h3>
+        </div>
+    </div>
+</section>
 
-  <section class="card table-section">
-    <div class="table-header">
-      <h3>Recent Scores</h3>
-      <div class="search-container">
+  <section class="card table-section" style="padding: 0; overflow: visible;">
+    <div class="table-header" style="padding: 24px 32px;">
+      <h3><i class="fas fa-history icon-label"></i> Recent Scores</h3>
+      <div class="search-container" style="width: 400px; margin-left: auto;">
           <input type="text" id="studentSearchInput" class="table-search" placeholder="Search my grades..." data-table="#studentScoresTable">
+          
           <button type="button" class="filter-btn"><i class="fas fa-filter"></i></button>
           <div class="filter-menu">
               <div class="filter-header">Category</div>
+              <div class="filter-item" onclick="applyFilter('#studentScoresTable', 'reset', '')">All</div>
               <div class="filter-item" onclick="applyFilter('#studentScoresTable', 'category', 'Quiz')">Quizzes</div>
-              <div class="filter-item" onclick="applyFilter('#studentScoresTable', 'reset', '')">Clear Filters</div>
+              <div class="filter-item" onclick="applyFilter('#studentScoresTable', 'category', 'Activity')">Activities</div>
+              <div class="filter-item" onclick="applyFilter('#studentScoresTable', 'category', 'Performance')">Performance</div>
+              <div class="filter-item" onclick="applyFilter('#studentScoresTable', 'category', 'Examination')">Exams</div>
           </div>
       </div>
     </div>
@@ -66,11 +77,13 @@
             <th>Total Item</th>
             <th>Paper</th>
             <th>Category</th>
+            <th>Recorded By</th>
+            <th>Status</th>
             <th>Date</th>
           </tr>
         </thead>
         <tbody>
-          <tr class="empty-row"><td colspan="6">No records yet</td></tr>
+          <tr class="empty-row"><td colspan="8" style="text-align: center; padding: 40px;">No records yet</td></tr>
         </tbody>
       </table>
     </div>
@@ -83,6 +96,7 @@
   </div>
 </footer>
 </div>
+<script src="../js/config.js"></script>
 <script src="../js/student.js"></script>
 </body>
 </html>

@@ -77,27 +77,43 @@ async function renderScoresTables() {
 
         tbody.innerHTML = '';
         if (records.length === 0) {
-            tbody.innerHTML = '<tr class="empty-row"><td colspan="8">No records yet</td></tr>';
+            tbody.innerHTML = '<tr class="empty-row"><td colspan="10" style="text-align:center; padding:30px;">No records yet</td></tr>';
             return;
         }
 
         records.forEach((r) => {
             const tr = document.createElement('tr');
-            const lockStatus = r.is_finalized ? '🔒' : '';
+            
+            const lockStatus = r.is_finalized ? '<i class="fas fa-lock" style="color: #888; margin-left: 5px;" title="Finalized"></i>' : '';
+            
+            const statusBadge = r.is_finalized 
+                ? `<span class="badge" style="background: #e6f4ea; color: #1e7e34; border: 1px solid #c3e6cb;"><i class="fas fa-eye"></i> PUBLISHED</span>`
+                : `<span class="badge" style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;"><i class="fas fa-eye-slash"></i> DRAFT (HIDDEN)</span>`;
+
             tr.innerHTML = `
                 <td>${r.full_name || 'Unknown Student'} ${lockStatus}</td> 
                 <td>${r.subject_name || 'General'}</td>
                 <td>${r.score}</td>
                 <td>${r.total_items || '-'}</td>
                 <td>
-                    ${r.paper_image_url ? `<a href="${API_BASE_URL}/uploads/${r.paper_image_url}" target="_blank">View Paper</a>` : 'No Image'}
+                    ${r.paper_image_url ? `<a href="${API_BASE_URL}/uploads/${r.paper_image_url}" target="_blank" class="view-link">View Paper</a>` : 'No Image'}
                 </td>
                 <td>${r.category}</td>
+                <td>${r.teacher_name || 'Admin'}</td> 
+                <td>${statusBadge}</td>
                 <td>${new Date(r.date_created).toLocaleDateString()}</td>
                 <td>
-                    <button class="btn" onclick="editScore(${r.id}, ${r.is_finalized})">Edit</button>
-                    <button class="btn outline" onclick="lockScore(${r.id}, ${r.is_finalized})">Finalize</button>
-                </td>
+    <div style="display: flex; gap: 8px; justify-content: center; align-items: center; white-space: nowrap;">
+        <button class="btn" style="padding: 6px 14px; font-size: 0.85rem; min-width: 70px;"
+            onclick="editScore(${r.id}, ${r.is_finalized})">
+            <i class="fas fa-pen"></i> Edit
+        </button>
+        <button class="btn outline" style="padding: 6px 14px; font-size: 0.85rem; min-width: 80px;"
+            onclick="lockScore(${r.id}, ${r.is_finalized})">
+            <i class="fas fa-lock"></i> Finalize
+        </button>
+    </div>
+</td>
             `;
             tbody.appendChild(tr);
         });
@@ -106,29 +122,76 @@ async function renderScoresTables() {
 
 async function renderFacultyTable() {
     const tbody = document.querySelector('#facultyTable tbody');
-    if (!tbody) return; 
+    if (!tbody) return;
+
+    const requesterEmail = localStorage.getItem('username');
 
     try {
         const res = await fetch(`${API_BASE_URL}/api/scores/get-faculty`);
         const faculty = await res.json();
 
-        if (faculty.length === 0) {
-            tbody.innerHTML = '<tr class="empty-row"><td colspan="3">No faculty authorized yet.</td></tr>';
-            return;
+        const me = faculty.find(f => f.email === requesterEmail);
+        const isAdmin = me?.is_admin === 1;
+
+        localStorage.setItem('isAdmin', isAdmin ? '1' : '0');
+
+        const approved = faculty.filter(f => !f.is_pending);
+
+        if (approved.length === 0) {
+            tbody.innerHTML = '<tr class="empty-row"><td colspan="4">No faculty authorized yet.</td></tr>';
+        } else {
+            tbody.innerHTML = '';
+            approved.forEach(f => {
+                const isSelf = f.email === requesterEmail;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${f.email} ${isSelf ? '<span style="font-size:0.7rem;color:#888;">(you)</span>' : ''}</td>
+                    <td>${f.campus}</td>
+                    <td>
+                        <span style="background:${f.is_admin ? '#fef3c7' : '#e0f2fe'};
+                                     color:${f.is_admin ? '#92400e' : '#0369a1'};
+                                     padding: 4px 10px; border-radius: 20px;
+                                     font-size: 0.75rem; font-weight: bold;">
+                            ${f.is_admin ? 'ADMIN' : 'TEACHER'}
+                        </span>
+                    </td>
+                    <td style="text-align: center;">
+                        <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">
+                            ${isAdmin && !isSelf ? `
+                                ${!f.is_admin ? `
+                                    <button class="btn" style="padding: 6px 14px; font-size: 0.85rem;"
+                                        onclick="promoteToAdmin('${f.email}')">
+                                        <i class="fas fa-shield-alt"></i> Promote
+                                    </button>
+                                ` : `
+                                    <button class="btn outline" style="padding: 6px 14px; font-size: 0.85rem;"
+                                        onclick="demoteToTeacher('${f.email}')">
+                                        <i class="fas fa-user"></i> Demote
+                                    </button>
+                                `}
+                                <button class="btn danger" style="padding: 6px 14px; font-size: 0.85rem;"
+                                    onclick="removeFaculty('${f.email}')">
+                                    <i class="fas fa-trash"></i> Remove
+                                </button>
+                            ` : !isAdmin && !f.is_admin && !isSelf ? `
+                                <button class="btn danger" style="padding: 6px 14px; font-size: 0.85rem;"
+                                    onclick="removeFaculty('${f.email}')">
+                                    <i class="fas fa-trash"></i> Remove
+                                </button>
+                            ` : `
+                                <span style="color: #aaa; font-size: 0.8rem;">—</span>
+                            `}
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
         }
 
-        tbody.innerHTML = '';
-        faculty.forEach(f => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${f.email}</td>
-                <td>${f.campus}</td>
-                <td><span class="badge ${f.is_admin ? 'admin-role' : 'teacher-role'}">
-                    ${f.is_admin ? 'Admin' : 'Teacher'}
-                </span></td>
-            `;
-            tbody.appendChild(tr);
-        });
+        if (isAdmin) {
+            renderPendingRequests(faculty.filter(f => f.is_pending));
+        }
+
     } catch (err) { console.error("Failed to load faculty list", err); }
 }
 
@@ -164,12 +227,105 @@ async function renderSubjectTable() {
         const res = await fetch(`${API_BASE_URL}/api/scores/get-subjects`);
         const subjects = await res.json();
         tbody.innerHTML = '';
-        subjects.forEach(s => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${s.name}</td><td><button class="btn-small outline" onclick="deleteSubject(${s.id})">Remove</button></td>`;
-            tbody.appendChild(tr);
-        });
+subjects.forEach(s => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+        <td>${s.name}</td>
+        <td style="text-align: center;">
+            <button class="btn danger" style="padding: 6px 12px; font-size: 0.85rem;"
+                onclick="deleteSubject(${s.id})">
+                <i class="fas fa-trash"></i> Remove
+            </button>
+        </td>
+    `;
+    tbody.appendChild(tr);
+});
     } catch (e) { console.error(e); }
+}
+
+async function renderPendingRequests(pending) {
+    let section = document.getElementById('pendingRequestsSection');
+    if (!section) {
+        section = document.createElement('section');
+        section.id = 'pendingRequestsSection';
+        section.className = 'card table-section';
+        section.style.marginTop = '20px';
+        section.innerHTML = `
+            <div class="table-header">
+                <h3><i class="fas fa-clock icon-label"></i> Pending Teacher Requests</h3>
+            </div>
+            <div class="table-wrapper">
+                <table id="pendingTable">
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>Campus</th>
+                            <th>Requested By</th>
+                            <th style="text-align:center;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        `;
+        document.querySelector('main.container').appendChild(section);
+    }
+
+    const tbody = section.querySelector('tbody');
+
+    if (pending.length === 0) {
+        section.style.display = 'none';
+        return;
+    }
+
+    section.style.display = 'block';
+    tbody.innerHTML = pending.map(p => `
+        <tr>
+            <td>${p.email}</td>
+            <td>${p.campus}</td>
+            <td>${p.requested_by || '—'}</td>
+            <td style="text-align: center;">
+                <div style="display: flex; gap: 8px; justify-content: center;">
+                    <button class="btn" style="padding: 6px 14px; font-size: 0.85rem;"
+                        onclick="approveFacultyRequest('${p.email}')">
+                        <i class="fas fa-check"></i> Approve
+                    </button>
+                    <button class="btn danger" style="padding: 6px 14px; font-size: 0.85rem;"
+                        onclick="declineFacultyRequest('${p.email}')">
+                        <i class="fas fa-times"></i> Decline
+                    </button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+async function approveFacultyRequest(email) {
+    const requesterEmail = localStorage.getItem('username');
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/scores/approve-faculty-request`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, requesterEmail })
+        });
+        const data = await res.json();
+        if (res.ok) { alert("Request approved!"); renderFacultyTable(); }
+        else alert(data.error);
+    } catch (err) { alert("Connection error."); }
+}
+
+async function declineFacultyRequest(email) {
+    const requesterEmail = localStorage.getItem('username');
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/scores/decline-faculty-request`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, requesterEmail })
+        });
+        const data = await res.json();
+        if (res.ok) { alert("Request declined."); renderFacultyTable(); }
+        else alert(data.error);
+    } catch (err) { alert("Connection error."); }
 }
 
 const addTeacherForm = document.getElementById('addTeacherForm');
@@ -178,17 +334,18 @@ if (addTeacherForm) {
         e.preventDefault();
         const email = document.getElementById('newTeacherEmail').value;
         const campus = document.getElementById('campusSelect').value;
+        const requesterEmail = localStorage.getItem('username');
         try {
-            const res = await fetch(`${API_BASE_URL}/api/scores/authorize-teacher`, {
+            const res = await fetch(`${API_BASE_URL}/api/scores/request-authorize-teacher`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, campus })
+                body: JSON.stringify({ email, campus, requesterEmail })
             });
             const data = await res.json();
             if (res.ok) {
                 alert(data.message);
                 addTeacherForm.reset();
-                renderFacultyTable(); 
+                renderFacultyTable();
             } else { alert("Error: " + data.error); }
         } catch (err) { alert("Connection error."); }
     });
@@ -198,17 +355,37 @@ const recordForm = document.getElementById('recordScoreForm');
 if (recordForm) {
     recordForm.addEventListener('submit', async (e) => {
         e.preventDefault(); 
-        const formData = new FormData();
+
         const scoreInput = document.getElementById('score');
         const totalItemsInput = document.getElementById('totalItemsInput');
+        const studentId = document.getElementById('studentSelect').value;
+        const subjectId = document.getElementById('subjectSelect').value;
+        const teacherId = localStorage.getItem('userId'); 
+
+        if (!teacherId) {
+            alert("Error: Teacher session not found. Please log in again.");
+            return;
+        }
+
+        if (!studentId) {
+            alert("Please select a student.");
+            return;
+        }
+
+        if (!subjectId) {
+            alert("Please select a subject.");
+            return;
+        }
 
         if (parseInt(scoreInput.value) > parseInt(totalItemsInput.value)) {
             alert("The Total Score cannot be greater than the Total Items.");
             return;
         }
-        
-        formData.append('student_id', document.getElementById('studentSelect').value);
-        formData.append('subject_id', document.getElementById('subjectSelect').value);
+
+        const formData = new FormData();
+        formData.append('recorded_by_id', teacherId);
+        formData.append('student_id', studentId);
+        formData.append('subject_id', subjectId);
         formData.append('score', scoreInput.value);
         formData.append('category', document.getElementById('categorySelect').value);
         formData.append('total_items', totalItemsInput.value || 0);
@@ -221,13 +398,23 @@ if (recordForm) {
                 method: 'POST',
                 body: formData
             });
+            
+            const result = await response.json();
+
             if (response.ok) {
-                alert("Score Recorded!");
+                alert("Score Recorded! It will be visible to the student once finalized.");
                 recordForm.reset();
+                document.getElementById('studentSearch').value = "";
+                document.getElementById('subjectSearch').value = "";
                 renderScoresTables(); 
                 updateDashboardStats();
+            } else {
+                alert("Error: " + (result.error || "Failed to save record"));
             }
-        } catch (err) { alert("Server error."); }
+        } catch (err) { 
+            console.error("Submission error:", err);
+            alert("Server connection error."); 
+        }
     });
 }
 
@@ -256,6 +443,7 @@ if (authForm) {
                 alert(data.message || "Student authorized! They can now log in using their Sorsu email.");
                 authForm.reset();
                 renderEnrollmentTable(); 
+            } else {
                 const err = await res.json();
                 alert(err.error);
             }
@@ -321,7 +509,6 @@ window.addEventListener('load', () => {
         displayProfileInfo();
         document.getElementById('saveTeacherProfile')?.addEventListener('click', saveProfileChanges);
         
-        // RESET BUTTON LOGIC FOR TEACHER
         document.getElementById('resetTeacherProfile')?.addEventListener('click', () => {
             if (confirm("Discard all unsaved changes?")) {
                 displayProfileInfo();
@@ -335,10 +522,10 @@ window.addEventListener('load', () => {
     updateDashboardStats();
 
     if (document.getElementById('scoresTable')) renderScoresTables();
-    if (document.getElementById('studentsTable')) renderActiveStudentTable(); // Updated to the new split function
+    if (document.getElementById('studentsTable')) renderActiveStudentTable();
     if (document.getElementById('subjectsTable')) renderSubjectTable();
     if (document.getElementById('facultyTable')) renderFacultyTable();
-    if (document.getElementById('enrollmentTable')) renderEnrollmentTable(); // Added for enrollment page
+    if (document.getElementById('enrollmentTable')) renderEnrollmentTable(); 
 });
 
 
@@ -358,7 +545,7 @@ async function editScore(id, isLocked) {
 
 async function lockScore(id, isLocked) {
     if (isLocked) return alert("Already finalized!");
-    if (confirm("Finalize this record? This locks it from editing.")) {
+    if (confirm("Finalize this record? This will publish the grade to the student's dashboard.")) {
         try {
             const res = await fetch(`${API_BASE_URL}/api/scores/finalize-score/${id}`, { method: 'PUT' });
             if (res.ok) renderScoresTables();
@@ -373,7 +560,6 @@ async function updateDashboardStats() {
             fetch(`${API_BASE_URL}/api/auth/profile?all=true`).then(r => r.json()),
             fetch(`${API_BASE_URL}/api/scores/get-subjects`).then(r => r.json())
         ]);
-        // FILTER: Dashboard only counts students who are APPROVED
         const approvedStudents = users.filter(u => u.role === 'student' && u.is_approved === 1);
         
         if (document.getElementById('totalRecords')) document.getElementById('totalRecords').innerText = scores.length;
@@ -385,23 +571,28 @@ async function updateDashboardStats() {
 async function loadDropdowns() {
     const studentSelect = document.getElementById('studentSelect');
     const subjectSelect = document.getElementById('subjectSelect');
+    
     try {
         if (studentSelect) {
             const users = await fetch(`${API_BASE_URL}/api/auth/profile?all=true`).then(r => r.json());
-            // DROPDOWN: Only show approved students
-            const students = users.filter(u => u.role === 'student' && u.is_approved === 1);
-            studentSelect.innerHTML = '<option value="">-- Select Student --</option>' + 
-                students.map(s => `<option value="${s.id}">${s.full_name}</option>`).join('');
+            const activeStudents = users.filter(u => u.role === 'student' && Number(u.is_approved) === 1);
+            studentSelect.innerHTML = '<option value="" disabled selected>-- Results --</option>' + 
+                activeStudents.map(s => `<option value="${s.id}">${s.full_name}</option>`).join('');
         }
+
         if (subjectSelect) {
             const subjects = await fetch(`${API_BASE_URL}/api/scores/get-subjects`).then(r => r.json());
-            subjectSelect.innerHTML = '<option value="">-- Select Subject --</option>' + 
+            subjectSelect.innerHTML = '<option value="" disabled selected>-- Results --</option>' + 
                 subjects.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
         }
-    } catch (e) { console.error(e); }
+    } catch (e) { 
+        console.error("Error loading searchable data:", e); 
+    }
+
+    setupSearchableDropdown('studentSearch', 'studentSelect');
+    setupSearchableDropdown('subjectSearch', 'subjectSelect');
 }
 
-// --- NEW SPLIT LOGIC FUNCTIONS ---
 
 async function renderEnrollmentTable() {
     const tbody = document.querySelector('#enrollmentTable tbody');
@@ -411,7 +602,6 @@ async function renderEnrollmentTable() {
         const res = await fetch(`${API_BASE_URL}/api/auth/profile?all=true`);
         const users = await res.json();
         
-        // SHOW: Students who signed up or authorized but NOT approved yet
         const pendingApproval = users.filter(u => u.role === 'student' && u.is_approved === 0);
 
         if (pendingApproval.length === 0) {
@@ -419,22 +609,30 @@ async function renderEnrollmentTable() {
             return;
         }
 
-        tbody.innerHTML = pendingApproval.map(s => `
-            <tr>
-                <td>
-                    <span class="status-badge ${s.is_verified ? 'active' : 'pending'}">
-                        ${s.is_verified ? 'Ready to Approve' : 'Authorized'}
-                    </span>
-                </td>
-                <td>${s.username}</td>
-                <td>${s.full_name}</td>
-                <td>${s.campus || '---'}</td> 
-                <td>
-                    <button class="btn" onclick="approveStudent(${s.id})">Approve</button>
-                    <button class="action-link-delete" onclick="handleRemoveStudent(${s.id}, '${s.full_name}')">Decline</button>
-                </td>
-            </tr>
-        `).join('');
+tbody.innerHTML = pendingApproval.map(s => `
+    <tr>
+        <td>
+            <span class="status-badge ${s.is_verified ? 'active' : 'pending'}">
+                ${s.is_verified ? 'Pending Approval' : 'Authorized'}
+            </span>
+        </td>
+        <td>${s.username}</td>
+        <td>${s.full_name}</td>
+        <td>${s.campus || '---'}</td>
+        <td>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <button class="btn" style="padding: 6px 12px; font-size: 0.85rem;"
+                    onclick="approveStudent(${s.id})">
+                    <i class="fas fa-check"></i> Approve
+                </button>
+                <button class="btn danger" style="padding: 6px 12px; font-size: 0.85rem;"
+                    onclick="handleRemoveStudent(${s.id}, '${s.full_name}')">
+                    <i class="fas fa-times"></i> Decline
+                </button>
+            </div>
+        </td>
+    </tr>
+`).join('');
     } catch (err) { console.error(err); }
 }
 
@@ -446,31 +644,50 @@ async function renderActiveStudentTable() {
         const res = await fetch(`${API_BASE_URL}/api/auth/profile?all=true`);
         const users = await res.json();
         
-        // SHOW: Only students who HAVE been approved
         const activeStudents = users.filter(u => u.role === 'student' && Number(u.is_approved) === 1);
+
+        const today = new Date().toDateString();
+        const todayCount = activeStudents.filter(s => {
+            return s.date_created && new Date(s.date_created).toDateString() === today;
+        }).length;
 
         if (document.getElementById('totalStudentCount')) 
             document.getElementById('totalStudentCount').innerText = activeStudents.length;
+        
+        if (document.getElementById('todaySignupCount'))
+            document.getElementById('todaySignupCount').innerText = todayCount;
 
         if (activeStudents.length === 0) {
             tbody.innerHTML = '<tr class="empty-row"><td colspan="5">No active students yet.</td></tr>';
             return;
         }
 
-        tbody.innerHTML = activeStudents.map(s => `
-            <tr>
-        <td><span class="status-badge active">ACTIVE</span></td>
-        <td>${s.username}</td>
-        <td>${s.full_name}</td>
-        <td>${s.campus || 'N/A'}</td>
-        <td style="text-align: center;">
-            <div style="display: flex; gap: 5px; justify-content: center;">
-                <button class="btn-view" onclick="viewPerformance('${s.username}')">View</button>
-                <button class="btn-drop" onclick="handleRemoveStudent(${s.id}, '${s.full_name}')">Drop</button>
-            </div>
-        </td>
-    </tr>
-        `).join('');
+        tbody.innerHTML = activeStudents.map(s => {
+            const statusBadge = s.is_verified 
+                ? `<span class="status-badge active">ACTIVE</span>`
+                : `<span class="status-badge pending">AUTHORIZED</span>`;
+
+            return `
+                <tr>
+                    <td>${statusBadge}</td>
+                    <td>${s.username}</td>
+                    <td>${s.full_name}</td>
+                    <td>${s.campus || 'N/A'}</td>
+                    <td style="text-align: center;">
+                        <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">
+                            <button class="btn outline" style="padding: 6px 12px; font-size: 0.85rem;"
+                                onclick="viewPerformance('${s.username}')">
+                                <i class="fas fa-chart-bar"></i> View
+                            </button>
+                            <button class="btn danger" style="padding: 6px 12px; font-size: 0.85rem;"
+                                onclick="handleRemoveStudent(${s.id}, '${s.full_name}')">
+                                <i class="fas fa-user-minus"></i> Drop
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
     } catch (err) { console.error(err); }
 }
 
@@ -497,7 +714,62 @@ async function handleRemoveStudent(id, name) {
     } catch (err) { alert("Error removing user."); }
 }
 
-// --- CROPPER LOGIC ---
+async function removeFaculty(email) {
+    if (!confirm(`Remove ${email} from the faculty list?`)) return;
+    const requesterEmail = localStorage.getItem('username');
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/scores/remove-faculty`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, requesterEmail })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            alert("Faculty member removed.");
+            renderFacultyTable();
+        } else {
+            alert(data.error || "Failed to remove.");
+        }
+    } catch (err) { alert("Connection error."); }
+}
+
+async function promoteToAdmin(email) {
+    if (!confirm(`Promote ${email} to Admin?`)) return;
+    const requesterEmail = localStorage.getItem('username');
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/scores/update-faculty-role`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, is_admin: 1, requesterEmail })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            alert("Promoted to Admin!");
+            renderFacultyTable();
+        } else {
+            alert(data.error || "Failed to promote.");
+        }
+    } catch (err) { alert("Connection error."); }
+}
+
+async function demoteToTeacher(email) {
+    if (!confirm(`Demote ${email} back to Teacher?`)) return;
+    const requesterEmail = localStorage.getItem('username');
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/scores/update-faculty-role`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, is_admin: 0, requesterEmail })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            alert("Demoted to Teacher.");
+            renderFacultyTable();
+        } else {
+            alert(data.error || "Failed to demote.");
+        }
+    } catch (err) { alert("Connection error."); }
+}
 
 let cropper;
 const avatarInput = document.getElementById('teacherAvatar');
@@ -557,26 +829,28 @@ function applyFilter(tableId, category, value) {
 function applyFilter(tableId, type, value) {
     const table = document.querySelector(tableId);
     if (!table) return;
-    
+
     const rows = table.querySelectorAll('tbody tr:not(.empty-row)');
-    
+
     rows.forEach(row => {
         if (type === 'reset') {
             row.style.display = '';
             return;
         }
 
-        // Index 5 is the 'Category' column in the Scores Table
-        const categoryCell = row.children[5].innerText.trim();
+        let textToMatch = '';
 
-        if (value === 'all' || categoryCell.toLowerCase() === value.toLowerCase()) {
+        if (type === 'campus') textToMatch = row.children[1]?.innerText || '';
+        if (type === 'role') textToMatch = row.children[2]?.innerText || '';
+        if (type === 'category') textToMatch = row.children[5]?.innerText || '';
+
+        if (value === 'all' || textToMatch.toLowerCase().includes(value.toLowerCase())) {
             row.style.display = '';
         } else {
             row.style.display = 'none';
         }
     });
 
-    // Close the menu after clicking
     document.querySelectorAll('.filter-menu').forEach(m => m.classList.remove('active'));
 }
 
@@ -604,9 +878,14 @@ document.getElementById('confirmCrop')?.addEventListener('click', () => {
 
     canvas.toBlob(async (blob) => {
         const formData = new FormData();
-        // FIELD NAME MUST MATCH: 'profile_photo'
         formData.append('profile_photo', blob, 'avatar.jpg');
-        formData.append('email', localStorage.getItem('username'));
+        
+        const email = localStorage.getItem('username');
+        if (!email) {
+            alert("Session expired. Please sign in again.");
+            return;
+        }
+        formData.append('email', email);
 
         try {
             const res = await fetch(`${API_BASE_URL}/api/auth/profile/upload-photo`, {
@@ -615,17 +894,75 @@ document.getElementById('confirmCrop')?.addEventListener('click', () => {
             });
 
             if (res.ok) {
+                const data = await res.json();
                 alert("Profile picture updated!");
-                location.reload(); 
+                cropperModal.style.display = 'none';
+                avatarInput.value = ""; 
+                displayProfileInfo(); 
             } else {
-                const errData = await res.json();
-                alert("Server Error: " + errData.error);
+                const contentType = res.headers.get("content-type");
+                if (contentType && contentType.includes("application/json")) {
+                    const errData = await res.json();
+                    alert("Upload Error: " + errData.error);
+                } else {
+                    const fullError = await res.text();
+                    console.error("Server crashed:", fullError);
+                    alert("Server Error (500): The folder path is still incorrect or inaccessible.");
+                }
             }
         } catch (err) {
-            alert("Connection error to backend.");
+            console.error("Upload error:", err);
+            alert("Connection error to backend. Check your terminal for errors.");
         }
     }, 'image/jpeg', 0.9);
 });
+
+function setupSearchableDropdown(inputId, selectId) {
+    const input = document.getElementById(inputId);
+    const select = document.getElementById(selectId);
+    if (!input || !select) return;
+
+    input.addEventListener('input', function () {
+        const filter = this.value.toLowerCase().trim();
+        const options = select.options;
+        let hasResults = false;
+
+        if (!filter) {
+            select.style.display = 'none';
+            select.value = '';
+            return;
+        }
+
+        for (let i = 0; i < options.length; i++) {
+            if (options[i].disabled) continue;
+            const match = options[i].text.toLowerCase().includes(filter);
+            options[i].style.display = match ? '' : 'none';
+            if (match) hasResults = true;
+        }
+
+        select.style.display = hasResults ? 'block' : 'none';
+    });
+
+    select.addEventListener('change', function () {
+        const selected = this.options[this.selectedIndex];
+        if (selected && selected.value) {
+            input.value = selected.text;
+            select.style.display = 'none';
+        }
+    });
+
+    document.addEventListener('mousedown', function (e) {
+        if (!input.contains(e.target) && !select.contains(e.target)) {
+            select.style.display = 'none';
+        }
+    });
+
+    input.addEventListener('focus', function () {
+        if (this.value.trim()) {
+            this.dispatchEvent(new Event('input'));
+        }
+    });
+}   
 
 window.editScore = editScore;
 window.lockScore = lockScore;
@@ -633,3 +970,8 @@ window.displayProfileInfo = displayProfileInfo;
 window.saveProfileChanges = saveProfileChanges;
 window.approveStudent = approveStudent;
 window.handleRemoveStudent = handleRemoveStudent;
+window.removeFaculty = removeFaculty;
+window.promoteToAdmin = promoteToAdmin;
+window.demoteToTeacher = demoteToTeacher;
+window.approveFacultyRequest = approveFacultyRequest;
+window.declineFacultyRequest = declineFacultyRequest;

@@ -3,7 +3,9 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="referrer" content="no-referrer">
 	<title>ScoreSafe | Profile</title>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
 	<link rel="stylesheet" href="../css/main.css">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -38,24 +40,26 @@
 
 				<form id="studentProfileForm">
 					<div class="form-group">
-						<label for="studentFullName"><i class="fas fa-user icon-label"></i> Full name</label>
-							<input id="studentFullName" type="text" />
-					</div>
+    <label for="studentFullName"><i class="fas fa-user icon-label"></i> Full name</label>
+    <input id="studentFullName" type="text" placeholder="Your full name" />
+</div>
 
-					<div class="form-group">
-						<label for="studentEmail"><i class="fas fa-envelope icon-label"></i> Email</label>
-						<input id="studentEmail" type="email" />
-					</div>
+<div class="form-group">
+    <label for="studentEmail"><i class="fas fa-envelope icon-label"></i> Email</label>
+    <input id="studentEmail" type="email" readonly 
+           style="background: #f9f9f9; cursor: not-allowed;" />
+</div>
 
-					<div class="form-group">
-						<label for="studentBio"><i class="fas fa-briefcase icon-label"></i>Bio</label>
-						<input id="studentBio" type="text" placeholder="Brief description about your background or department" />
-					</div>
+<div class="form-group">
+    <label for="studentBio"><i class="fas fa-briefcase icon-label"></i> Bio</label>
+    <input id="studentBio" type="text" 
+           placeholder="Brief description about your background or department" />
+</div>
 
-					<div class="form-group">
-						<label for="studentAvatar"><i class="fas fa-image icon-label"></i> Profile photo</label>
-						<input id="studentAvatar" type="file" accept="image/*" />
-					</div>
+<div class="form-group">
+    <label for="studentAvatar"><i class="fas fa-image icon-label"></i> Change Profile Photo</label>
+    <input id="studentAvatar" type="file" accept="image/*" />
+</div>
 
 					<div style="display:flex;gap:12px;margin-top:8px">
 						<div class="profile-actions">
@@ -76,6 +80,26 @@
 	</div>
 </footer>
 
+<div id="cropperModal" class="modal-overlay" 
+     style="display:none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); 
+            z-index: 9999; align-items: center; justify-content: center;">
+    <div class="modal" style="background: white; padding: 20px; border-radius: 12px; 
+                               width: 90%; max-width: 500px;">
+        <h3 style="margin-bottom: 15px;">Crop Profile Photo</h3>
+        <div style="max-height: 400px; background: #000; overflow: hidden;">
+            <img id="imageToCrop" style="max-width: 100%;">
+        </div>
+        <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+            <button type="button" class="btn outline" id="cancelCrop">Cancel</button>
+            <button type="button" class="btn" id="confirmCrop">Apply & Save</button>
+        </div>
+    </div>
+</div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+<script src="../js/config.js"></script>
 <script src="../js/student.js"></script>
 </body>
 </html>
+	

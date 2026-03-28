@@ -8,9 +8,53 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-<script type="module">
-    const API_BASE_URL = 'http://127.0.0.1:3000';
 
+<main class="container">
+    <div class="auth-container signup">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="logo-large">ScoreSafe</div>
+                <p>Complete your registration</p>
+            </div>
+
+            <form id="registrationForm">
+                <div class="form-group">
+                    <label>Verified University Email</label>
+                    <input type="text" id="displayEmail" readonly 
+                           style="background: #f9f9f9; color: #666;">
+                </div>
+
+                <div class="form-group">
+                    <label for="campus">
+                        <i class="fas fa-university icon-label"></i> Select Your Campus
+                    </label>
+                    <select id="campus" required style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit;">
+                        <option value="" disabled selected>Choose your campus</option>
+                        <option value="Sorsogon City">Sorsogon City (Main)</option>
+                        <option value="Bulan">Bulan Campus</option>
+                        <option value="Castilla">Castilla Campus</option>
+                        <option value="Magallanes">Magallanes Campus</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn-primary" style="margin-top: 15px; width: 100%;">
+                    Complete Registration
+                </button>
+            </form>
+            
+            <div class="form-footer" style="margin-top: 20px;">
+                <p style="font-size: 0.8rem;">
+                    <a href="signin.html" style="color: #888; text-decoration: none;">
+                        Wrong account? Go back
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script src="js/config.js"></script>
+<script>
     window.onload = async () => {
         const email = sessionStorage.getItem('pendingEmail');
         if (!email) {
@@ -29,79 +73,46 @@
         document.getElementById('displayEmail').value = email;
     };
 
-document.getElementById('registrationForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const campus = document.getElementById('campus').value;
-    const token = sessionStorage.getItem('pendingToken');
+    document.getElementById('registrationForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const campus = document.getElementById('campus').value;
+        const token = sessionStorage.getItem('pendingToken');
 
-    try {
-        const res = await fetch(`${API_BASE_URL}/api/auth/register-sorsu`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token, campus }) 
-        });
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/auth/register-sorsu`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token, campus })
+            });
 
-        const data = await res.json();
-if (res.ok) {
-            localStorage.setItem('role', data.user.role);
-            localStorage.setItem('username', data.user.username);
-            localStorage.setItem('fullName', data.user.full_name);
-            localStorage.setItem('profilePic', data.user.profile_photo);
-            localStorage.setItem('campus', campus);
+            const data = await res.json();
 
-            sessionStorage.clear(); 
-            
-            alert("Account Created! Please wait for faculty approval.");
-            
-            if (data.user.role === 'student') {
-                window.location.href = 'waiting.html';
+            if (res.ok) {
+                localStorage.setItem('role', data.user.role);
+                localStorage.setItem('username', data.user.username);
+                localStorage.setItem('fullName', data.user.full_name);
+                localStorage.setItem('profilePic', data.user.profile_photo);
+                localStorage.setItem('campus', campus);
+                localStorage.setItem('userId', data.user.id);
+
+                sessionStorage.clear();
+
+                alert("Account Created! Please wait for faculty approval.");
+
+                if (data.user.role === 'student') {
+                    window.location.href = 'waiting.html';
+                } else {
+                    window.location.href = 'teacher/dashboard.html';
+                }
             } else {
-                window.location.href = 'teacher/dashboard.html';
+                alert(data.message || "Registration failed. Please try again.");
             }
-        } else {
-            alert(data.message || "Registration failed. Please try again.");
+        } catch (err) {
+            console.error(err);
+            alert("Registration failed. Please try again.");
         }
-    } catch (err) {
-        console.error(err);
-        alert("Registration failed. Please try again.");
-    }
-});
-
+    });
 </script>
 
-<main class="container">
-    <div class="auth-container signup">
-        <div class="auth-card">
-            <div class="auth-header">
-                <div class="logo-large">ScoreSafe</div>
-                <p>Complete your registration</p>
-            </div>
-
-            <form id="registrationForm">
-                <div class="form-group">
-                    <label>Verified University Email</label>
-                    <input type="text" id="displayEmail" readonly style="background: #f9f9f9; color: #666;">
-                </div>
-
-                <div class="form-group">
-                    <label for="campus"><i class="fas fa-university icon-label"></i> Select Your Campus</label>
-                    <select id="campus" required style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit;">
-                        <option value="" disabled selected>Choose your campus</option>
-                        <option value="Sorsogon City">Sorsogon City (Main)</option>
-                        <option value="Bulan">Bulan Campus</option>
-                        <option value="Castilla">Castilla Campus</option>
-                        <option value="Magallanes">Magallanes Campus</option>
-                    </select>
-                </div>
-
-                <button type="submit" class="btn-primary" style="margin-top: 15px; width: 100%;">Complete Registration</button>
-            </form>
-            
-            <div class="form-footer" style="margin-top: 20px;">
-                <p style="font-size: 0.8rem;"><a href="signin.html" style="color: #888; text-decoration: none;">Wrong account? Go back</a></p>
-            </div>
-        </div>
-    </div>
-</main>
 </body>
 </html>

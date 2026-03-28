@@ -1,26 +1,27 @@
-const API_BASE_URL = 'http://127.0.0.1:3000';
 let cropper;
-
-const avatarInput = document.getElementById('studentAvatar');
-const imageToCrop = document.getElementById('imageToCrop');
-const cropperModal = document.getElementById('cropperModal');
+let avatarInput;
+let imageToCrop;
+let cropperModal;
 
 window.onload = () => {
+    // Initialize cropper elements after DOM is ready
+    avatarInput = document.getElementById('studentAvatar');
+    imageToCrop = document.getElementById('imageToCrop');
+    cropperModal = document.getElementById('cropperModal');
+
     renderStudentData(); 
     displayStudentProfile(); 
+    setupCropper();
 
-    // Reset button functionality
     document.getElementById('resetStudentProfile')?.addEventListener('click', () => {
         if (confirm("Discard all unsaved changes?")) {
             displayStudentProfile();
-            const fileInput = document.getElementById('studentAvatar');
-            if (fileInput) fileInput.value = "";
+            if (avatarInput) avatarInput.value = "";
         }
     });
 };
 
 async function renderStudentData() {
-    // 1. We identify the specific student by their email in localStorage
     const email = localStorage.getItem('username'); 
     
     const tbody = document.querySelector('#studentScoresTable tbody') || 
@@ -29,18 +30,35 @@ async function renderStudentData() {
     if (!tbody || !email) return;
 
     try {
-        // 2. We pass the email to the backend to TRIGGER the privacy filter
         const res = await fetch(`${API_BASE_URL}/api/scores/get-records?email=${encodeURIComponent(email)}`);
         const records = await res.json();
         
+        const finalizedRecords = records.filter(r => r.is_finalized === 1);
+
         tbody.innerHTML = '';
-        if (records.length === 0) {
-            tbody.innerHTML = '<tr class="empty-row"><td colspan="6">No records yet</td></tr>';
+        if (finalizedRecords.length === 0) {
+            tbody.innerHTML = `
+                <tr class="empty-row">
+                    <td colspan="8" style="text-align: center; padding: 40px; color: #666;">
+                        <i class="fas fa-info-circle" style="margin-bottom: 10px; font-size: 1.5rem; display: block; color: var(--primary-color);"></i>
+                        No finalized records available yet. <br>
+                        <small>Grades will appear here once officially confirmed by your instructor.</small>
+                    </td>
+                </tr>`;
+
+            if (document.getElementById('studentTotalScores')) 
+                document.getElementById('studentTotalScores').innerText = '0';
+            if (document.getElementById('studentTotalSubjects')) 
+                document.getElementById('studentTotalSubjects').innerText = '0';
+            if (document.getElementById('studentAverage')) 
+                document.getElementById('studentAverage').innerText = '0%';
             return;
         }
 
-        records.forEach(r => {
+        finalizedRecords.forEach(r => {
             const tr = document.createElement('tr');
+            const statusBadge = `<span class="badge" style="background: #e6f4ea; color: #1e7e34; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; border: 1px solid #1e7e34;"><i class="fas fa-check-circle"></i> OFFICIAL</span>`;
+
             tr.innerHTML = `
                 <td>${r.subject_name || 'General'}</td>
                 <td><strong>${r.score}</strong></td>
@@ -51,19 +69,27 @@ async function renderStudentData() {
                         'No Image'}
                 </td>
                 <td>${r.category}</td>
+                <td>${r.teacher_name || 'Faculty Member'}</td> 
+                <td>${statusBadge}</td>
                 <td>${new Date(r.date_created).toLocaleDateString()}</td>
             `;
             tbody.appendChild(tr);
         });
 
-        // Dashboard Stats calculation
-        const totalScoresEl = document.getElementById('studentTotalScores');
-        const totalSubsEl = document.getElementById('studentTotalSubjects');
-        if (totalScoresEl) totalScoresEl.innerText = records.length;
-        if (totalSubsEl) {
-            const uniqueSubs = [...new Set(records.map(r => r.subject_name))];
-            totalSubsEl.innerText = uniqueSubs.length;
-        }
+        const uniqueSubs = [...new Set(finalizedRecords.map(r => r.subject_name))];
+        const totalEarned = finalizedRecords.reduce((sum, r) => sum + Number(r.score), 0);
+        const totalPossible = finalizedRecords.reduce((sum, r) => sum + Number(r.total_items || 0), 0);
+        const average = totalPossible > 0 
+            ? ((totalEarned / totalPossible) * 100).toFixed(1) 
+            : 0;
+
+        if (document.getElementById('studentTotalScores')) 
+            document.getElementById('studentTotalScores').innerText = finalizedRecords.length;
+        if (document.getElementById('studentTotalSubjects')) 
+            document.getElementById('studentTotalSubjects').innerText = uniqueSubs.length;
+        if (document.getElementById('studentAverage')) 
+            document.getElementById('studentAverage').innerText = `${average}%`;
+
     } catch (e) { 
         console.error("Data fetch failed:", e); 
     }
@@ -71,28 +97,44 @@ async function renderStudentData() {
 
 async function displayStudentProfile() {
     const email = localStorage.getItem('username');
+    console.log("Loading profile for:", email);
+
     const profileForm = document.getElementById('studentProfileForm');
+    console.log("Form found:", profileForm); 
     if (!email || !profileForm) return;
+
     try {
         const res = await fetch(`${API_BASE_URL}/api/auth/profile?username=${email}`);
         const user = await res.json();
+        console.log("User data:", user); 
         if (res.ok) {
-            document.getElementById('studentFullName').value = user.full_name || '';
-            document.getElementById('studentEmail').value = user.username || '';
-            document.getElementById('studentBio').value = user.bio || '';
+            const nameField = document.getElementById('studentFullName');
+            const emailField = document.getElementById('studentEmail');
+            const bioField = document.getElementById('studentBio');
+            
+            console.log("Fields:", nameField, emailField, bioField); // ✅ Add this
+
+            if (nameField) nameField.value = user.full_name || '';
+            if (emailField) emailField.value = user.username || '';
+            if (bioField) bioField.value = user.bio || '';
+
             const avatarWrapper = document.getElementById('studentAvatarPreview');
             if (avatarWrapper && user.profile_photo) {
                 const src = user.profile_photo.startsWith('http') ? 
                             user.profile_photo.replace(/=s\d+-c/g, '=s0') : 
                             `${API_BASE_URL}/uploads/${user.profile_photo}`;
-                avatarWrapper.innerHTML = `<img src="${src}" style="width:100%; height:100%; object-fit:cover; border-radius:12px;">`;
+                avatarWrapper.innerHTML = `<img src="${src}" referrerpolicy="no-referrer" 
+                    style="width:100%; height:100%; object-fit:cover; border-radius:12px;">`;
             }
         }
-    } catch (err) { console.error("Profile load failed", err); }
+    } catch (err) { 
+        console.error("Profile load failed", err); 
+    }
 }
 
-// Cropper implementation (Same as teacher side)
-if (avatarInput) {
+function setupCropper() {
+    if (!avatarInput || !imageToCrop || !cropperModal) return;
+
     avatarInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -101,39 +143,65 @@ if (avatarInput) {
                 imageToCrop.src = event.target.result;
                 cropperModal.style.display = 'flex';
                 if (cropper) cropper.destroy();
-                cropper = new Cropper(imageToCrop, { aspectRatio: 1, viewMode: 1 });
+                cropper = new Cropper(imageToCrop, {
+                    aspectRatio: 1,
+                    viewMode: 1,
+                    dragMode: 'move',
+                    autoCropArea: 0.8
+                });
             };
             reader.readAsDataURL(file);
         }
     });
-}
 
-document.getElementById('cancelCrop')?.addEventListener('click', () => {
-    cropperModal.style.display = 'none';
-    avatarInput.value = ""; 
-});
+    document.getElementById('cancelCrop')?.addEventListener('click', () => {
+        cropperModal.style.display = 'none';
+        if (cropper) cropper.destroy();
+        avatarInput.value = "";
+    });
 
-const confirmCropBtn = document.getElementById('confirmCrop');
-if (confirmCropBtn) {
-    confirmCropBtn.addEventListener('click', () => {
+    document.getElementById('confirmCrop')?.addEventListener('click', () => {
         if (!cropper) return;
+
         const canvas = cropper.getCroppedCanvas({ width: 400, height: 400 });
         canvas.toBlob(async (blob) => {
             const formData = new FormData();
             formData.append('profile_photo', blob, 'avatar.jpg');
-            formData.append('email', localStorage.getItem('username'));
+
+            const email = localStorage.getItem('username');
+            if (!email) {
+                alert("Session expired. Please sign in again.");
+                return;
+            }
+            formData.append('email', email);
+
             try {
                 const res = await fetch(`${API_BASE_URL}/api/auth/profile/upload-photo`, {
                     method: 'POST',
-                    body: formData 
+                    body: formData
                 });
+
                 if (res.ok) {
-                    alert("Updated!");
+                    alert("Profile picture updated!");
                     cropperModal.style.display = 'none';
-                    avatarInput.value = ""; 
-                    displayStudentProfile(); 
-                } else { alert("Failed."); }
-            } catch (err) { alert("Error."); }
+                    if (cropper) cropper.destroy();
+                    avatarInput.value = "";
+                    displayStudentProfile();
+                } else {
+                    const contentType = res.headers.get("content-type");
+                    if (contentType && contentType.includes("application/json")) {
+                        const errData = await res.json();
+                        alert("Upload Error: " + errData.error);
+                    } else {
+                        const fullError = await res.text();
+                        console.error("Server crashed:", fullError);
+                        alert("Server Error (500): Upload failed.");
+                    }
+                }
+            } catch (err) {
+                console.error("Upload error:", err);
+                alert("Connection error to backend.");
+            }
         }, 'image/jpeg', 0.9);
     });
 }
@@ -160,7 +228,6 @@ if (studentProfileForm) {
     });
 }
 
-// Filter engine for Student side
 function applyFilter(tableId, type, value) {
     const table = document.querySelector(tableId);
     if (!table) return;
@@ -180,8 +247,14 @@ function applyFilter(tableId, type, value) {
     document.querySelectorAll('.filter-menu').forEach(m => m.classList.remove('active'));
 }
 
-// Search and Filter UI logic
 document.getElementById('studentSearchInput')?.addEventListener('input', function() {
+    const val = this.value.toLowerCase();
+    const tableId = this.getAttribute('data-table');
+    const rows = document.querySelectorAll(`${tableId} tbody tr:not(.empty-row)`);
+    rows.forEach(r => r.style.display = r.innerText.toLowerCase().includes(val) ? "" : "none");
+});
+
+document.getElementById('recordsSearch')?.addEventListener('input', function() {
     const val = this.value.toLowerCase();
     const tableId = this.getAttribute('data-table');
     const rows = document.querySelectorAll(`${tableId} tbody tr:not(.empty-row)`);

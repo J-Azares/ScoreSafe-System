@@ -7,6 +7,18 @@
     <script src="../js/guard.js"></script>
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Professional Alignment for Subject Table */
+        #subjectsTable td:last-child {
+            text-align: center;
+            width: 150px;
+        }
+        .action-cell {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
 </head>
 <body>
     <div class="page-wrapper">
@@ -58,17 +70,17 @@
                 </div>
             </div>
             <div class="table-wrapper">
-                <table id="subjectsTable">
-                    <thead>
-                        <tr>
-                            <th>Subject Name</th>
-                            <th style="text-align: center;">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="subjectTableBody">
-                        <tr class="empty-row"><td colspan="2">No subjects yet</td></tr>
-                    </tbody>
-                </table>
+                <table id="subjectsTable" style="width: 100%;">
+    <thead>
+        <tr>
+            <th style="width: 70%;">Subject Name</th>
+            <th style="text-align: center; width: 30%;">Action</th>
+        </tr>
+    </thead>
+    <tbody id="subjectTableBody">
+        <tr class="empty-row"><td colspan="2" style="text-align: center; padding: 60px;">No subjects added yet</td></tr>
+    </tbody>
+</table>
             </div>
         </section>
     </main>

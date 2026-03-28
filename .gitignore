@@ -1,4 +1,7 @@
-backend/node_modules/
-*.env
-.vscode/
+backend/.env
 backend/src/firebase-admin.json
+backend/node_modules/
+node_modules/
+uploads/
+.vscode/
+*.env

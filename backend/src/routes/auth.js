@@ -15,10 +15,11 @@ if (!admin.apps.length) {
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, path.join(__dirname, '../uploads'));
+        // Correct path to step out of src/routes to reach the root uploads folder
+        cb(null, path.join(__dirname, '../../uploads'));
     },
     filename: (req, file, cb) => {
-        cb(null, 'avatar-' + Date.now() + path.extname(file.originalname));
+        cb(null, 'avatar-' + Date.now() + '.jpg');
     }
 });
 
@@ -35,6 +36,12 @@ router.post('/register-sorsu', async (req, res) => {
 
         const [whitelist] = await db.execute("SELECT * FROM teacher_whitelist WHERE email = ?", [email]);
         const assignedRole = whitelist.length > 0 ? 'teacher' : 'student';
+
+        // Check if user already exists to prevent duplicate entry errors
+        const [existing] = await db.execute("SELECT id FROM users WHERE username = ?", [email]);
+        if (existing.length > 0) {
+            return res.status(400).json({ error: "User already registered. Please sign in." });
+        }
 
         const [result] = await db.execute(
             "INSERT INTO users (full_name, username, password, role, campus, profile_photo, is_verified, is_approved) VALUES (?, ?, 'sso_only', ?, ?, ?, 1, 0)",
@@ -58,12 +65,21 @@ router.post('/profile/upload-photo', upload.single('profile_photo'), async (req,
     if (!req.file) return res.status(400).json({ error: "No image file provided" });
     const filename = req.file.filename;
 
+    if (!email || email === 'null' || email === 'undefined') {
+        return res.status(400).json({ error: "User email is required for the update." });
+    }
+
     try {
-        await db.execute("UPDATE users SET profile_photo = ? WHERE username = ?", [filename, email]);
+        const [result] = await db.execute("UPDATE users SET profile_photo = ? WHERE username = ?", [filename, email]);
+        
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: "User not found. No record was updated." });
+        }
+
         res.json({ message: "Photo uploaded successfully!", filename: filename });
     } catch (err) {
         console.error("Database Error:", err);
-        res.status(500).json({ error: "Failed to save photo reference" });
+        res.status(500).json({ error: "Failed to save photo reference to database." });
     }
 });
 
@@ -74,7 +90,7 @@ router.get('/profile', async (req, res) => {
             const [users] = await db.execute("SELECT id, full_name, username, role, campus, is_approved, is_verified FROM users");
             return res.json(users);
         }
-        const [users] = await db.execute('SELECT full_name, username, bio, profile_photo FROM users WHERE username = ?', [username]);
+        const [users] = await db.execute('SELECT id, full_name, username, bio, profile_photo FROM users WHERE username = ?', [username]);
         if (users.length > 0) res.json(users[0]);
         else res.status(404).json({ message: "User not found" });
     } catch (err) {
@@ -99,7 +115,7 @@ router.delete('/user/:id', async (req, res) => {
         await db.execute('DELETE FROM users WHERE id = ?', [id]);
         res.json({ message: "User deleted successfully" });
     } catch (err) {
-        res.status(500).json({ error: "Cannot delete student with existing records." });
+        res.status(500).json({ error: "Cannot delete user with existing academic records." });
     }
 });
 
@@ -115,7 +131,7 @@ router.post('/google-login', async (req, res) => {
         );
         
         if (users.length === 0) {
-            return res.status(404).json({ error: "User not registered." });
+            return res.status(404).json({ error: "User not registered. Please sign up first." });
         }
 
         res.json({ 
@@ -123,7 +139,7 @@ router.post('/google-login', async (req, res) => {
             user: users[0] 
         });
     } catch (error) {
-        res.status(401).json({ error: "Invalid Credentials" });
+        res.status(401).json({ error: "Invalid Google Credentials" });
     }
 });
 
@@ -143,8 +159,35 @@ router.get('/check-user', async (req, res) => {
 router.post('/authorize-student', async (req, res) => {
     const { email, fullName } = req.body;
     try {
-        const [existing] = await db.execute("SELECT id FROM users WHERE username = ?", [email]);
-        if (existing.length > 0) return res.status(400).json({ error: "Email already authorized or registered." });
+        const [facultyCheck] = await db.execute(
+            "SELECT is_admin FROM teacher_whitelist WHERE email = ?", [email]
+        );
+        if (facultyCheck.length > 0) {
+            const role = facultyCheck[0].is_admin ? 'Admin' : 'Teacher';
+            return res.status(400).json({ 
+                error: `This email is already registered as a ${role} and cannot be enrolled as a student.` 
+            });
+        }
+
+        const [existing] = await db.execute(
+            "SELECT id, role FROM users WHERE username = ?", [email]
+        );
+        if (existing.length > 0) {
+            const role = existing[0].role;
+            if (role === 'teacher') {
+                return res.status(400).json({ 
+                    error: "This email is already registered as a Teacher." 
+                });
+            }
+            if (role === 'student') {
+                return res.status(400).json({ 
+                    error: "This student is already registered." 
+                });
+            }
+            return res.status(400).json({ 
+                error: "This email is already in the system." 
+            });
+        }
 
         await db.execute("DELETE FROM teacher_whitelist WHERE email = ?", [email]);
 

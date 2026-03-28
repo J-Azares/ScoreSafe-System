@@ -26,14 +26,22 @@
 </header>
 
 <main class="container">
-
-  <!-- Full Scores Table -->
-  <section class="card table-section">
-    <div class="table-header">
-      <h3>All Scores & Papers</h3>
-      <div class="search-container">
-        <input type="text" id="recordsSearch">
-        <button type="button" class="search-btn" aria-label="Search"><i class="fas fa-search search-icon"></i></button>
+  <section class="card table-section" style="padding: 0; overflow: visible; margin-top: 20px;">
+    <div class="table-header" style="padding: 24px 32px;">
+      <h3><i class="fas fa-list-ul icon-label"></i> All Scores & Papers</h3>
+      <div class="search-container" style="width: 400px; margin-left: auto;">
+<div class="search-container" style="width: 400px; margin-left: auto;">
+    <input type="text" id="recordsSearch" class="table-search" placeholder="Search my records..." data-table="#myRecordsTable">
+    <button type="button" class="filter-btn"><i class="fas fa-filter"></i></button>
+    <div class="filter-menu">
+        <div class="filter-header">Category</div>
+        <div class="filter-item" onclick="applyFilter('#myRecordsTable', 'reset', '')">All</div>
+        <div class="filter-item" onclick="applyFilter('#myRecordsTable', 'category', 'Quiz')">Quizzes</div>
+        <div class="filter-item" onclick="applyFilter('#myRecordsTable', 'category', 'Activity')">Activities</div>
+        <div class="filter-item" onclick="applyFilter('#myRecordsTable', 'category', 'Performance')">Performance</div>
+        <div class="filter-item" onclick="applyFilter('#myRecordsTable', 'category', 'Examination')">Exams</div>
+    </div>
+</div>
       </div>
     </div>
     <div class="table-wrapper">
@@ -45,12 +53,14 @@
             <th>Total Item</th>
             <th>Paper</th>
             <th>Category</th>
+            <th>Recorded By</th>
+            <th>Status</th>
             <th>Date</th>
           </tr>
         </thead>
-        <tbody>
-          <tr class="empty-row"><td colspan="6">No records yet</td></tr>
-        </tbody>
+<tbody>
+    <tr class="empty-row"><td colspan="8" style="text-align: center; padding: 40px; color: #999;">No records yet</td></tr>
+</tbody>
       </table>
     </div>
   </section>
@@ -62,6 +72,7 @@
   </div>
 </footer>
 
+<script src="../js/config.js"></script>
 <script src="../js/student.js"></script>
 </body>
 </html>

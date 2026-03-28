@@ -1364,6 +1364,213 @@ html, body {
     overflow: visible; 
 }
 
+/* Professional Searchable Dropdown Styles */
+#studentSelect, #subjectSelect {
+    background: #ffffff;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    border: 2px solid var(--primary-color);
+    max-height: 200px;
+}
+
+#studentSelect option, #subjectSelect option {
+    padding: 10px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+#studentSelect option:hover, #subjectSelect option:hover {
+    background-color: #f8f9fa;
+    color: var(--primary-color);
+}
+
+/* --- Professional Empty State Center Alignment --- */
+
+/* 1. Ensure the empty-row cell centers text and adds professional spacing */
+.empty-row td {
+    text-align: center !important; /* Force center alignment */
+    padding: 60px 20px !important; /* Vertical breathing room */
+    color: #94a3b8; /* Professional muted gray */
+    font-size: 1rem;
+    font-style: normal; /* Remove italics for a cleaner look */
+    background: #fff;
+    border: none !important; /* Remove bottom border for a cleaner empty box */
+}
+
+/* 2. Add a professional icon look via CSS if you want it automated */
+.empty-row td::before {
+    content: '\f11c'; /* FontAwesome keyboard/folder icon */
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    display: block;
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+    opacity: 0.3;
+}
+
+/* 3. Ensure the table itself takes up full container width */
+table {
+    width: 100% !important;
+    border-collapse: collapse;
+}
+
+/* 4. Fix for Enrollment and Active Student tables specifically */
+#enrollmentTable, #studentsTable, #scoresTable, #myRecordsTable {
+    min-width: 100%;
+}
+
+/* Fix for Tilted Action Buttons */
+#subjectsTable td {
+    vertical-align: middle;
+    height: 60px; /* Ensures consistent row height */
+}
+
+.action-link-delete {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    background-color: transparent;
+    color: #dc3545;
+    border: 1px solid #dc3545;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    line-height: 1; /* Prevents text shifting */
+}
+
+.action-link-delete:hover {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* Force the "No Records" message to the dead center */
+.empty-row td {
+    text-align: center !important;
+    vertical-align: middle !important;
+    padding: 60px 20px !important;
+    color: #94a3b8 !important;
+    font-size: 1.1rem;
+    background: #ffffff;
+    border: none !important;
+}
+
+/* Ensure searchable dropdowns sit correctly above other inputs */
+#studentSelect, #subjectSelect {
+    background: white;
+    border: 2px solid var(--primary-color);
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    outline: none;
+}
+
+/* Fix for Searchable Dropdown Visibility */
+.form-group[style*="position: relative"] {
+    z-index: 10; /* Ensures the parent doesn't clip the dropdown */
+}
+
+#studentSelect, #subjectSelect {
+    display: none; /* Controlled by JS */
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    z-index: 9999 !important; /* Force it to stay on top of everything */
+    background: #ffffff;
+    border: 2px solid var(--primary-color);
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+#studentSelect option, #subjectSelect option {
+    padding: 12px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+#studentSelect option:hover, #subjectSelect option:hover {
+    background-color: #f8f9fa;
+    color: var(--primary-color);
+}
+
+button.btn.danger {
+  background: transparent;
+  color: #dc3545;
+  border: 2px solid #dc3545;
+  box-shadow: none;
+}
+
+button.btn.danger:hover {
+  background: #dc3545;
+  color: #fff;
+}
+
+button.btn.danger {
+    background: transparent;
+    color: #dc3545;
+    border: 2px solid #dc3545;
+    box-shadow: none;
+}
+
+button.btn.danger:hover {
+    background: #dc3545;
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+th {
+    font-weight: 500;        /* lighter than 600 */
+    white-space: nowrap;     /* prevent header text wrapping */
+    letter-spacing: 0.3px;
+}
+
+.stat-card h3 {
+    font-size: 22px;
+    font-weight: 600;
+}
+
+.stat-label {
+    font-size: 13px;
+    color: #6b7280;
+}
+
+tbody td {
+    font-weight: 400;
+    font-size: 14px;
+    padding: 14px 20px;
+}
+
+button.btn {
+    white-space: nowrap;
+}
+
+.table-wrapper table {
+    min-width: 900px;
+}
+
+.status-badge.active {
+    background-color: #e6f4ea;
+    color: #1e7e34;
+    border: 1px solid #c3e6cb;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+
+.status-badge.pending {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+
 /* ========================
    Modal (Sign out confirmation)
 ======================== */

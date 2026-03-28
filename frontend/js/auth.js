@@ -19,6 +19,7 @@ async function handleCredentialResponse(response) {
             localStorage.setItem('username', data.user.username);
             localStorage.setItem('fullName', data.user.full_name);
             localStorage.setItem('profilePic', data.user.profile_photo);
+            localStorage.setItem('userId', data.user.id);
             
             window.location.href = data.user.role === 'teacher' ? 'teacher/dashboard.html' : 'student/dashboard.html';
         } else {
